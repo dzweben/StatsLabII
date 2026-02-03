@@ -1,0 +1,200 @@
+---
+title: "Lab 8"
+author: "Joshua Klugman"
+output:
+  html_document:
+    df_print: paged
+    toc: true
+    toc_depth: 2
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+
+library(tidyverse)
+library(haven)
+library(emmeans)
+library(afex)
+library(pastecs)
+library(car)
+source("https://osf.io/download/98b7r/")
+```
+
+# Lab 8 overview
+
+The data in the file `wordsum v2.sav` is a vocabulary test administered to people from different regions of the United States, with scores ranging from 0 to 10. We have a 2×4 design, with our two factors being a city resident (versus not being a city resident; this is variable `sized`) and region (Midwest, Northeast, South, and West; this is variable `regions`). The outcome is the vocabulary score (variable `ws` which is a count variable ranging from 0 correct words to 10 correct words).
+
+# Problem 1
+
+Load packages and Wilcox functions.
+
+```{r}
+# packages
+library(afex)
+library(car)
+library(emmeans)
+library(haven)
+source("https://osf.io/download/98b7r/")
+```
+
+# Problem 2
+
+Read in the `wordsum v2.sav` datafile.
+
+```{r}
+ws <- read_sav("wordsum v2.sav")
+```
+
+# Problem 3
+
+Inspect labels, create factor versions, and verify construction.
+
+```{r}
+attr(ws$sized, "labels")
+attr(ws$regions, "labels")
+
+ws$sized_f <- factor(ws$sized,
+                     levels = c(0, 1),
+                     labels = c("Non-City", "City"))
+
+ws$regions_f <- factor(ws$regions,
+                       levels = c(1, 2, 3, 4),
+                       labels = c("Midwest", "Northeast", "South", "West"))
+
+# confirm factor construction
+
+table(ws$sized, ws$sized_f, exclude = NULL)
+
+table(ws$regions, ws$regions_f, exclude = NULL)
+```
+
+# Problem 4
+
+Create a superfactor and cross-tabulate with city status and region.
+
+```{r}
+ws <- group_by(ws, sized_f, regions_f)
+ws <- mutate(ws, regionsize_new = cur_group_id())
+ws <- ungroup(ws)
+
+# add labels for the superfactor
+ws$regionsize_new_f <- factor(ws$regionsize_new,
+                              levels = 1:8,
+                              labels = c("Midwest Non-City", "Northeast Non-City",
+                                         "South Non-City", "West Non-City",
+                                         "Midwest City", "Northeast City",
+                                         "South City", "West City"))
+
+# cross-tabs
+
+table(ws$regionsize_new_f, ws$sized_f, exclude = NULL)
+
+table(ws$regionsize_new_f, ws$regions_f, exclude = NULL)
+```
+
+# Problem 5
+
+Histograms by city status and region.
+
+```{r, fig.cap="Vocabulary scores by region and city status"}
+ggplot(data = ws, aes(x = ws)) +
+  geom_histogram() +
+  facet_grid(regions_f ~ sized_f)
+```
+
+# Problem 6
+
+Skewness statistics and Shapiro-Wilk tests for each cell.
+
+```{r}
+tapply(ws$ws, ws$regionsize_new_f, pastecs::stat.desc, norm = TRUE)
+```
+
+# Problem 7
+
+Levene's test for homogeneity of variance.
+
+```{r}
+car::leveneTest(ws ~ regionsize_new_f, data = ws, center = mean)
+```
+
+# Problem 8
+
+Use MAD-Median rule to detect outliers.
+
+```{r}
+o <- tapply(ws$ws, ws$regionsize_new_f, outpro)
+o
+
+# If outliers appear in any group, run this for each group with outliers:
+# ws$ws[ws$regionsize_new_f=="GROUP NAME"][o[["GROUP NAME"]]$out.id]
+```
+
+# Problem 9
+
+Diagnostics write-up (3 sentences maximum).
+
+Based on the histograms and skewness statistics, the distributions appear only modestly skewed across cells. Shapiro-Wilk tests indicate statistically significant departures from normality in each cell (all p-values < .01). Levene’s test suggests homogeneity of variances across the eight cells (p = .8907), and the MAD-Median rule results above should be checked for any outliers.
+
+# Problem 10
+
+Create an ID variable.
+
+```{r}
+ws$id <- rownames(ws)
+```
+
+# Problem 11
+
+Cell and marginal means.
+
+```{r}
+ws_anova <- aov_car(ws ~ sized_f * regions_f + Error(id), data = ws)
+
+# cell means
+emmeans(ws_anova, ~ sized_f * regions_f)
+
+# marginal means
+emmeans(ws_anova, ~ sized_f)
+emmeans(ws_anova, ~ regions_f)
+```
+
+# Problem 12
+
+Excel table of cell means.
+
+Create an 4x2 table in Excel with rows as `regions_f` and columns as `sized_f`. Use the cell means from Problem 11, round to two decimals, and format with a clear title and minimal borders.
+
+# Problem 13
+
+Interpretability of main effects.
+
+Use the cell means and interaction pattern to determine whether the main effects are safe to interpret (consistent city effect across regions and consistent region rank order across city status).
+
+# Problem 14
+
+Two-way ANOVA output.
+
+```{r}
+summary(ws_anova)
+ws_anova$Anova
+```
+
+# Problem 15
+
+Calculate partial omega squared for each effect.
+
+```{r}
+# Use the ANOVA table from ws_anova$Anova and compute partial omega squared
+# for sized_f, regions_f, and sized_f:regions_f.
+```
+
+# Problem 16
+
+Write up the omnibus results (journal style).
+
+Report the two-way ANOVA results including F, df, p, and partial omega squared for each effect.
+
+# Problem 17
+
+Upload the document to Canvas and verify the submission.
