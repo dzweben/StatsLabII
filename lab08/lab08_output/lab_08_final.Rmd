@@ -1,6 +1,6 @@
 ---
 title: "Lab 8"
-author: "Joshua Klugman"
+author: "Daniel Zweben"
 output:
   html_document:
     df_print: paged
@@ -166,6 +166,8 @@ emmeans(ws_anova, ~ regions_f)
 # Problem 12 (5 pts)
 
 Make a table in Excel, with rows corresponding to one factor (preferably the factor with the most levels) and columns corresponding to the other factor. The table should be polished with a clear title, column and row headings, consistent alignment and rounding, and judicious use of borders to set off the title and headers (do NOT use "all borders"!).
+
+# some fun r syntax :D 
 
 ```{r}
 # cell means table (paste into Excel and format)
