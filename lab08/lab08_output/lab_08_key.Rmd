@@ -8,8 +8,7 @@ output:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
-root_dir <- normalizePath("..")
-knitr::opts_knit$set(root.dir = root_dir)
+root_dir <- normalizePath(file.path(dirname(knitr::current_input()), ".."))
 .libPaths(c(file.path(root_dir, "rlib"), .libPaths()))
 
 library(tidyverse)
@@ -36,7 +35,7 @@ library(afex)
 library(car)
 library(emmeans)
 library(haven)
-source("Rallfun-v45.txt")
+source(file.path(root_dir, "Rallfun-v45.txt"))
 ```
 
 Output:
@@ -46,7 +45,7 @@ library(afex)
 library(car)
 library(emmeans)
 library(haven)
-source("Rallfun-v45.txt")
+source(file.path(root_dir, "Rallfun-v45.txt"))
 ```
 
 ## Problem 2 (0 pts)
@@ -56,14 +55,14 @@ Read in the `wordsum v2.sav` datafile.
 Syntax:
 
 ```{r p2_syntax, eval=FALSE}
-ws <- read_sav("wordsum v2.sav")
+ws <- read_sav(file.path(root_dir, "wordsum v2.sav"))
 head(ws)
 ```
 
 Output:
 
 ```{r p2_output, echo=FALSE}
-ws <- read_sav("wordsum v2.sav")
+ws <- read_sav(file.path(root_dir, "wordsum v2.sav"))
 head(ws)
 ```
 
@@ -293,6 +292,10 @@ cell_table <- cell_means |>
   dplyr::select(regions_f, sized_f, emmean) |>
   pivot_wider(names_from = sized_f, values_from = emmean)
 cell_table
+```
+
+```{r p12_excel_image, echo=FALSE, fig.cap="Excel-style table of cell means"}
+knitr::include_graphics(file.path(root_dir, "lab08_output", "q12_cell_means.png"))
 ```
 
 Create a 4x2 table in Excel with rows as `regions_f` and columns as `sized_f`. Use the cell means above, round to two decimals, and format with a clear title and minimal borders.
