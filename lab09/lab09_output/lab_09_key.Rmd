@@ -12,7 +12,7 @@ input_dir <- tryCatch(dirname(knitr::current_input()), error = function(e) NA)
 root_dir <- if (is.na(input_dir) || input_dir == ".") getwd() else normalizePath(file.path(input_dir, ".."))
 
 find_file_up <- function(fname, start = root_dir) {
-  candidates <- c(start, dirname(start), file.path(start, "lab09"))
+  candidates <- c(start, dirname(start), file.path(start, "lab09"), file.path(start, "StatsII-Labs", "lab09"))
   for (p in candidates) {
     fp <- file.path(p, fname)
     if (file.exists(fp)) return(fp)
@@ -54,7 +54,7 @@ library(afex)
 library(car)
 library(emmeans)
 library(haven)
-source(file.path(root_dir, "Rallfun-v45.txt"))
+source(find_file_up("Rallfun-v45.txt"))
 ```
 
 ## Problem 2 (0 pts)
@@ -80,7 +80,7 @@ head(ws)
 Excel table of cell + marginal means.
 
 ```{r p3_table, echo=FALSE, fig.cap="Cell and marginal means"}
-knitr::include_graphics(file.path(root_dir, "lab09_output", "q3_cell_marginal.png"))
+knitr::include_graphics(find_file_up("q3_cell_marginal.png"))
 ```
 
 ## Problem 4 (3 pts)

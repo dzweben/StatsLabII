@@ -1672,12 +1672,12 @@ design: city resident (<code>sized</code>) and region
 library(car)
 library(emmeans)
 library(haven)
-source(file.path(root_dir, &quot;Rallfun-v45.txt&quot;))</code></pre>
+source(find_file_up(&quot;Rallfun-v45.txt&quot;))</code></pre>
 </div>
 <div id="problem-2" class="section level1">
 <h1>Problem 2</h1>
 <p>Read in the data.</p>
-<pre class="r"><code>ws &lt;- read_sav(file.path(root_dir, &quot;wordsum v2.sav&quot;))
+<pre class="r"><code>ws &lt;- read_sav(find_file_up(&quot;wordsum v2.sav&quot;))
 head(ws)</code></pre>
 <div data-pagedtable="false">
 <script data-pagedtable-source type="application/json">
@@ -1885,11 +1885,11 @@ sc_city</code></pre>
 {"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["contrast"],"name":[1],"type":["fct"],"align":["left"]},{"label":["regions_f"],"name":[2],"type":["fct"],"align":["left"]},{"label":["estimate"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["SE"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["df"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["t.ratio"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["p.value"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["d"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["bonf_p"],"name":[9],"type":["dbl"],"align":["right"]}],"data":[{"1":"(Non-City) - City","2":"Midwest","3":"-0.625","4":"0.2110717","5":"312","6":"-2.9610785","7":"3.300857e-03","8":"-0.66211727","9":"1.320343e-02","_rn_":"1"},{"1":"(Non-City) - City","2":"Northeast","3":"1.525","4":"0.2110717","5":"312","6":"7.2250314","7":"3.866539e-12","8":"1.61556614","9":"1.546616e-11","_rn_":"2"},{"1":"(Non-City) - City","2":"South","3":"-0.075","4":"0.2110717","5":"312","6":"-0.3553294","7":"7.225829e-01","8":"-0.07945407","9":"1.000000e+00","_rn_":"3"},{"1":"(Non-City) - City","2":"West","3":"0.225","4":"0.2110717","5":"312","6":"1.0659882","7":"2.872532e-01","8":"0.23836222","9":"1.000000e+00","_rn_":"4"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
   </script>
 </div>
-<p>Using the Bonferroni-adjusted threshold (α = .05/4), the city vs
-non-city contrast is significant in the Midwest and Northeast (non-city
-higher in the Northeast; city higher in the Midwest), but not
-significant in the South or West. Reported effect sizes are Cohen’s d
-from the table above, and p-values are Bonferroni-adjusted.</p>
+<p>APA-style write-up (Bonferroni-adjusted): In the Midwest, city
+dwellers scored higher than non-city dwellers, t(312) = 2.96, p_bonf =
+.013, d = 0.66. In the Northeast, non-city dwellers scored higher than
+city dwellers, t(312) = 7.23, p_bonf &lt; .001, d = 1.62. The South and
+West comparisons were not significant (both p_bonf = 1.00).</p>
 </div>
 <div id="problem-14" class="section level1">
 <h1>Problem 14</h1>
@@ -2028,12 +2028,15 @@ cc</code></pre>
 <div id="problem-25" class="section level1">
 <h1>Problem 25</h1>
 <p>Write-up.</p>
-<p>The Northeast vs Midwest &amp; West contrast is significant for both
-city and non-city dwellers, and the interaction contrast is also
-significant, indicating that the Northeast advantage differs by city
-status. Report the direction of effects, t ratios, p-values, and Cohen’s
-d from the contrast table above, using the Scheffe and Bonferroni
-critical values for reference.</p>
+<p>APA-style write-up: For city dwellers, the Northeast vs (Midwest
+&amp; West) contrast was significant, t(312) = 5.61, p &lt; .001, d =
+1.09, indicating lower Northeast scores than the average of Midwest and
+West for city residents (estimate = -1.03). For non-city dwellers, the
+same contrast was significant, t(312) = 3.83, p = .0002, d = 0.74,
+indicating higher Northeast scores than the average of Midwest and West
+(estimate = 0.70). The interaction contrast was significant, t(312) =
+6.67, p &lt; .001, d = 1.83, showing that the Northeast advantage
+differs sharply by city status.</p>
 </div>
 <div id="problem-26" class="section level1">
 <h1>Problem 26</h1>
