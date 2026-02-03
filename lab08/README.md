@@ -56,6 +56,10 @@ Interpretation: the city effect changes across regions, so the interaction drive
 - **HTML knit**: `lab08/lab08_output/lab_08_solution.html`
 - **Script**: `lab08/lab08_output/lab_08_script.R`
 
+## What’s the Difference (Solution vs Key)?
+- **Solution Rmd** (`lab_08_solution.Rmd`): concise narrative + results.
+- **Key Rmd** (`lab_08_key.Rmd`): every problem includes explicit **Syntax:** and **Output:** blocks.
+
 ## Code Snippet (Core Model)
 
 ```r

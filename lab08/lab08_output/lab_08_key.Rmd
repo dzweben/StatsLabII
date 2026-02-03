@@ -8,7 +8,22 @@ output:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
-root_dir <- normalizePath(file.path(dirname(knitr::current_input()), ".."))
+# NOTE:
+# - This file is the *key* Rmd: explicit "Syntax:" + "Output:" blocks.
+# - The *solution* Rmd is a concise narrative + outputs.
+
+input_dir <- tryCatch(dirname(knitr::current_input()), error = function(e) NA)
+root_dir <- if (is.na(input_dir) || input_dir == ".") getwd() else normalizePath(file.path(input_dir, ".."))
+
+find_file_up <- function(fname, start = root_dir) {
+  candidates <- c(start, dirname(start), file.path(start, "lab08"))
+  for (p in candidates) {
+    fp <- file.path(p, fname)
+    if (file.exists(fp)) return(fp)
+  }
+  return(fname)
+}
+
 .libPaths(c(file.path(root_dir, "rlib"), .libPaths()))
 
 library(tidyverse)
@@ -17,7 +32,7 @@ library(emmeans)
 library(afex)
 library(pastecs)
 library(car)
-source(file.path(root_dir, "Rallfun-v45.txt"))
+source(find_file_up("Rallfun-v45.txt"))
 ```
 
 # Lab 8 overview
@@ -35,7 +50,7 @@ library(afex)
 library(car)
 library(emmeans)
 library(haven)
-source(file.path(root_dir, "Rallfun-v45.txt"))
+source(find_file_up("Rallfun-v45.txt"))
 ```
 
 Output:
@@ -45,7 +60,7 @@ library(afex)
 library(car)
 library(emmeans)
 library(haven)
-source(file.path(root_dir, "Rallfun-v45.txt"))
+source(find_file_up("Rallfun-v45.txt"))
 ```
 
 ## Problem 2 (0 pts)
@@ -55,14 +70,14 @@ Read in the `wordsum v2.sav` datafile.
 Syntax:
 
 ```{r p2_syntax, eval=FALSE}
-ws <- read_sav(file.path(root_dir, "wordsum v2.sav"))
+ws <- read_sav(find_file_up("wordsum v2.sav"))
 head(ws)
 ```
 
 Output:
 
 ```{r p2_output, echo=FALSE}
-ws <- read_sav(file.path(root_dir, "wordsum v2.sav"))
+ws <- read_sav(find_file_up("wordsum v2.sav"))
 head(ws)
 ```
 
