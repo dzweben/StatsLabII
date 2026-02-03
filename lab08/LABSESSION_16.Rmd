@@ -1,0 +1,196 @@
+---
+title: "Lab Session 16"
+author: "Joshua Klugman"
+output: 
+  word_document:
+    highlight: kate
+    reference_docx: style_template2.docx
+    fig_caption: no
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Two-Way ANOVA Contrasts
+
+We have a dataset of GPAs for people across four types of majors – arts and humanities, sciences, business, and education. We also have information about whether or not each person
+is an athlete. In the last lab session, we introduced how to run an omnibus factorial ANOVA.  This week, we’re going to examine some simple and complex contrasts to learn more about the
+main effects of major and athlete status on GPA.
+
+## 1. Set working directory, load packages, read in data
+
+```{r, eval=F}
+# set working directory
+# (use pull down menus)
+
+# packages
+library(tidyverse)
+library(haven)
+library(emmeans)
+library(afex)
+library(pastecs)
+library(car)
+source("https://osf.io/download/zvtph/")
+```
+
+## 2. Load data
+
+```{r, eval=F}
+df<-read_sav("lab 15 gpa by athlete major.sav")
+```
+
+## 3. Examine variable attributes & create factor variables
+
+*We examined the data in the last lab session, so let’s just go right ahead and create new factor variables for major and athlete status. You can use attr() to check the levels.*
+
+```{r, eval=F}
+attr(DATAFRAME$NUMERIC.VARIABLE, “labels”)
+
+DATAFRAME$NEW.FACTOR.VAR <- factor(DATAFRAME$NUMERIC.VARIABLE, levels = c(#,#), labels = c(“LABEL 1”, “LABEL 2”, ...))
+
+table(DATAFRAME$NUMERIC.VARIABLE, DATAFRAME$NEW.FACTOR.VAR, exclude = NULL)
+```
+
+## 4. Create an ID variable to be used in the factorial ANOVA
+
+```{r, eval=F}
+DATAFRAME$IDVAR<-rownames(DATAFRAME)
+```
+
+## 5. Run factorial ANOVA
+
+*Remember that MSE is equivalent to within mean square (MSW) and can be used to calculate pooled standard deviation. What effects are significant?*
+
+
+```{r, eval=F}
+MODELOBJECT <- aov_car(GPA ~ ATHLETEFACTOR * MAJORFACTOR + Error(IDVAR), data = DATAFRAME)
+summary(MODELOBJECT)
+MODELOBJECT$Anova
+```
+
+## 6. Produce cell and marginal means.
+
+```{r, eval=F}
+em1.cell <- emmeans(MODELOBJECT, ~ ATHLETEFACTOR * MAJORFACTOR)
+em1.cell
+
+em1.athlete.margins <- emmeans(MODELOBJECT, ~ ATHLETEFACTOR)
+em1.athlete.margins
+
+em1.major.margins <- emmeans(MODELOBJECT, ~ MAJORFACTOR)
+em1.major.margins
+
+```
+
+## 7. Run a pairwise contrast for the main effect of major.
+
+*Use a Tukey adjustment.  Which contrasts are significant?*
+
+Syntax:
+
+```{r,eval=F}
+pairs(em1.major.margins,adjust="tukey")
+```
+
+## 8. Find the Tukey-adjusted critcal t* value
+
+*We can use the qtukey() function to calculate the critical value. Since we included adjust = “tukey” in the pairs() function in step 7, the p-value produced already takes into account the adjusted critical value. But for illustrative purposes, let’s calculate that critical value ourselves.  Remember that we need three values for the qtukey() function – 1) 1 – alpha, 2) number of levels within factor of interest, and 3) the denominator degrees of freedom.*
+
+```{r, eval=F}
+qtukey(1 - ALPHA, FACTOR OF INTEREST LEVELS, DEGREES OF FREEDOM)/sqrt(2)
+```
+
+## 9. Identify simple effect of athlete for each major.
+
+*You can specify either “none” or “tukey” for your adjustment since we have two levels in our focal predictor (athlete status). Because of this, the Tukey adjustment and no adjustment are equivalent.*
+
+```{r,eval=F}
+pairs(em1.cell, simple = "ATHLETE FACTOR VARIABLE NAME", adjust = "none")
+```
+
+## 10. Calculate Tukey-adjusted t* critical value keeping familywise error at 0.05
+
+*Make sure to divide alpha by the number of levels in the secondary factor. What’s the focal predictor and what is the secondary predictor if we’re interested in the main effect of athlete status by major?  Which contrasts survive this Bonferroni adjustment?*
+
+Focal variable (A) =
+Number of levels (a) =
+Secondary variable (B) =
+Number of levels (b) =
+
+```{r,eval=F}
+qtukey(1 - 0.05/B, A, DOF) / sqrt(2)
+```
+
+## 11. Look at the ANOVA output
+
+*Regardless of the significance of the interaction, we want to see if the athlete effect in the major with the strongest athlete advantage is significantly different from the athlete effect in the major with the weakest athlete advantage. Usually, if you don’t have a significant interaction you would not conduct an interaction contrast!*
+
+```{r, eval=F}
+summary(MODELNAME)
+```
+
+## 12. Calculate major-level differences in GPA
+
+*Using the cell means we calculated previously, calculate the differences in athlete vs. non-athlete GPAs for each major.*
+
+Arts/Humanities:
+Sciences:
+Business:
+Education:
+
+## 13. Write the null hypothesis for the interaction contrast
+
+*Using the results from the previous step, conduct an interaction contrast to examine the interaction between athlete status and major on GPA for the majors with the strongest and weakest athlete status effect.*
+
+## 14. Define contrast value and conduct contrast
+
+*Remember to check the cell means order to correctly assign coefficients.*
+
+```{r, eval=F}
+interaction_contrast <- c()
+contrast_list <- list(interaction_contrast)
+contrast(EMMEANSOBJECT, contrast_list)
+```
+
+## 15. Calculate Scheffe's critcal value
+
+*Since the contrast is not significant according to a conventional test, it is redundant to calculate a Scheffe-adjusted critical value since it will always be more conservative than the conventional critical value, but do it for the sake of illustration.*
+
+```{r, eval=F}
+sqrt((A-1)*(B-1)*qf(1-ALPHA,(A-1)*(B-1),N-AB))
+```
+
+(corrected 20260128 1336)
+
+## 16. Calculate Cohen's d
+
+*Rather than calculate Cohen's d for the interaction contrast, it would probably be better to just calculate Cohen's d for the two contrasts being compared.*
+
+
+## 17 Write-up
+
+*Write-up your results like you would for a journal article.*
+
+## 18 Plot the cell means
+
+```{r, eval=F}
+# convert cell_means emmGrid to data frame
+plot_means <- as.data.frame(EMMEANSOBJECT)
+plot_means
+
+
+ggplot(data = plot_means, 
+       aes(y = emmean, x = MAJORFACOTR,
+           fill = ATHLETEFACTOR)) +
+geom_bar(stat = "identity", position = "dodge") +
+geom_errorbar(aes(ymin = lower.CL, ymax = upper.CL), 
+              position =position_dodge(width = 0.9), 
+              size = 0.5, width = 0.4) +
+scale_fill_manual(name = "Athlete Status", 
+                  values = c("blue", "orange")) +
+labs(title = "GPA by Major and Athlete Status",
+caption = "Error bars represent 95% confidence intervals",
+x = "Major", y = "GPA") +
+theme_classic()
+```
