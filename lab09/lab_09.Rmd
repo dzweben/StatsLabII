@@ -1,0 +1,192 @@
+---
+title: "Lab 9"
+author: "Joshua Klugman"
+output: 
+  word_document:
+    highlight: kate
+    reference_docx: style_template2.docx
+    fig_caption: no
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(emmeans)
+library(haven)
+library(PMCMRplus)
+#source("https://dornsife.usc.edu/assets/sites/239/docs/Rallfun-v40.txt")
+library(tidyverse)
+
+```
+
+
+You are continuing to use the SPSS datafile wordsum.sav that you used for Lab 8. This is a vocabulary test administered to people from different regions of the United States, with scores ranging from 0 to 10. We have a 2×4 design, with our two factors being a city resident (versus not being a city resident; this is variable “sized”) and region (Midwest, Northeast, South, and West; this is variable “regions”). The outcome is the vocabulary score (variable “ws” which is a count variable ranging from 0 correct words to 10 correct words).
+
+
+* Integrate your answers in this Word document .  
+* For any problem asking you to carry out an operation in R, copy and paste your syntax and any R output below the respective question.
+* For questions that ask you to do manual calculations, you should show your work. Using R for manual calculations is allowed and encouraged (show your R syntax and output).
+* For each lab assignment, you should maintain an organized organized syntax file ("script")
+  + With comments prefaced by `#` that explain what you are doing
+  + missteps/mistakes are deleted
+  + in case you lose your work, you can run your script and reproduce your analyses.
+  + Some labs may require you to build on analyses/data cleaning you did in a prior lab and saving scripts easily allow you to do that
+* You need to upload this document to Canvas by the deadline *and check Canvas to make sure your upload took*
+
+
+## Problem 1 (0 pts)
+
+Load these packages: `afex`, `car`, `emmeans`, `haven`.  If they have not been installed, you will need to install them.
+
+Also load Rand Wilcox's `Rallfun-v45.txt` page of functions,  with  `source("https://osf.io/download/98b7r/")`
+
+## Problem 2 (0 pts)
+
+Read in the `wordsum.sav` datafile into the R environment.
+
+## Problem 3 (1 pt)
+
+Copy and paste your Excel table of marginal and cell means from the prior lab.  If you made mistakes in that lab assignment, correct the table and paste it.
+
+## Problem 4 (3 pts)
+
+Create the factor versions of the `sized` and `regions` variable, and an ID variable.  **Produce two-way tables confirming the factor variables were generated correctly.**
+
+
+## Problem 5 (5 pts)
+
+Run the two-way ANOVA, store and print the `emmGrid` objects, and print the output of the two way ANOVA.
+
+Syntax (you should be giving different names to the `emmGRID` objects):
+
+```{r eval=F}
+ANOVA_TABLE_NAME<-aov_car(OUTCOME~FACTOR1*FACTOR2+Error(IDVARNAME),data=DATAFRAME)
+# cell means
+EMMGRID_OBJECT_NAME<-emmeans(ANOVA_TABLE_NAME,~FACTORA*FACTORB)
+EMMGRID_OBJECT_NAME
+# marginal means
+EMMGRID_OBJECT_NAME<-emmeans(ANOVA_TABLE_NAME,~FACTORA)
+EMMGRID_OBJECT_NAME
+EMMGRID_OBJECT_NAME<-emmeans(ANOVA_TABLE_NAME,~FACTORB)
+EMMGRID_OBJECT_NAME
+
+summary(ANOVA_TABLE_NAME)
+ANOVA_TABLE_NAME$Anova
+```
+
+
+
+## Problem 6 (1 pt)
+
+Write a null hypothesis testing the main effect of the South-West difference.
+
+
+## Problem 7 (1 pt)
+
+Produce pair-wise contrasts for the main effects of region, using a Tukey-HSD adjustment.  
+
+Syntax (use the `emmGRID` object storing the marginal means of region):
+
+```{r,eval=F}
+pairs(EMMGRID_OBJECT_NAME,adjust="tukey")
+```
+
+
+
+## Problem 8 (2 pt)
+
+Use R to calculate the Scheffe-adjusted critical value for the **main effects of region**, keeping the *familywise* error rate at 0.05.  Take the square root of the critical value so it could be used to assess a *t* test statistic.
+
+
+## Problem 9 (1 pt)
+
+Write the null hypothesis for the simple effect of city status for people living in the Northeast.
+
+
+## Problem 10 (1 pts)
+
+Have R produce contrasts for the effect of city resident status for each region.  It does not matter if you specify `"none"` or `"tukey"` for `adjust`--with two levels in the focal predictor the Tukey adjustment is equivalent to no adjustment.  
+
+Syntax (you should be specifying the `EMMGRID_OBJECT` storing the CELL means):
+
+```{r,eval=F}
+pairs(EMMGRID_OBJECT_NAME,simple="FACTOR",adjust="none")
+```
+
+
+## Problem 11 (2 pts)
+
+We need to account for the fact that we can do the city vs non-city contrast for four regions. Use R to calculate the post-hoc adjusted critical value for the simple main effects of city resident status, keeping the familywise error rate at .05.
+
+## Problem 12 (4 pts)
+
+For each contrast (the city-noncity comparison within each region) calculate Cohen’s *d*.
+
+## Problem 13 (5 pts)
+
+Write Up the results of the pairwise contrasts of city resident status, using the Bonferroni-adjusted threshold for significance (that is, accounting for the fact you did four comparisons–city vs. non-city in four regions). Your interpretation should report direction of the associations (that is which group has higher vocabulary scores), the effect size, and the p value (make clear if you are using the Bonferroni-adjusted p value or the unadjusted p value).
+
+## Problem 14 (1 pt)
+
+Write a null hypothesis for the simple effect of Midwest versus Northeast, among city dwellers.
+
+
+## Problem 15 (1 pt)
+
+Have R produce pairwise contrasts for region among city-dwellers and among non-city dwellers (that is, the simple effects of region by city status).  Again, specify  `"none"` for `adjust`
+
+
+## Problem 16 (2 pts)
+
+We need to account for the fact that we can do the region comparisons for two regions. Use R to calculate the Tukey HSD adjusted critical value for the simple main effects of region by city status, keeping the familywise error rate at 0.05 (a "Tukey HSD + Bonferroni" adjustment).
+
+Syntax.  `ALPHA` is your familywise error rate, `A` is the number of levels in the focal predictor (factor A, whose simple effects is being tested), and `B` is the number of levels in the other factor (factor B).  `DOF` is the "denominator degrees of freedom" in the ANOVA--the number of total subjects minus the number of cells ($n-AB$).
+
+```{r, eval=F}
+qtukey(1-ALPHA/B,A,df=DOF)/sqrt(2)
+```
+
+## Problem 17 (12 pts)
+
+Identify the contrasts that survive the Tukey HSD+Bonferroni adjustment.
+
+## Problem 18 (3 pt)
+
+Write three null hypotheses:
+* the simple effect of Northeast vs Midwest and West, among city-dwellers 
+* the simple effect of Northeast vs Midwest and West, among non-city dwellers.
+* the interaction contrast comparing the above two simple effects
+
+To help you prepare for conducting the contrast, I highly recommend you write a null hypothesis listing all cell population means (use a contrast coefficient of 0 for those cells not involved in the contrast), in the order they are printed in the cell `emmGrid` object.
+
+## Problem 19 (3 pt)
+
+Create contrast vectors for a complex contrast of Northeast vs Midwest and West among city dwellers and non-city dwellers.  Your vectors should have eight values in them, listing the contrast coefficients for the cells, in the order they are listed in the cell `emmGrid` object.
+
+## Problem 20 (1 pt)
+
+Assemble the contrast vectors in a list.
+
+## Problem 21 (1 pt)
+
+Have R calculate these contrasts using the cell `emmGRID` object.  Do not apply any adjustments--yet.
+
+
+## Problem 22 (2 pts)
+
+Calculate the Scheffe- and Bonferroni-adjusted critical value for a a complex simple contrast of region by city status.  Take the square root to get a critical value comparable to a t-statistic.
+
+## Problem 23 (2 pt)
+
+Calculate the Scheffe-adjusted critical value for an interaction contrast.  Take the square root to get a critical value comparable to a t-statistic.
+
+## Problem 24 (3 pt)
+
+Calculate Cohen's *d* for the three contrasts.
+
+## Problem 25 (5 pts)
+
+Write-up the Northeast vs Midwest & West contrasts (and interaction contrast) as you would for a publication.
+
+## Problem 26 (0 points)
+
+Upload your this document to Canvas. Double-check your submission to make sure it took.

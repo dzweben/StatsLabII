@@ -1,0 +1,181 @@
+---
+title: "Lab Session 18 ANSWER KEY"
+author: "Joshua Klugman"
+output:  
+  word_document:
+    highlight: kate
+    reference_docx: style_template_ak2.docx
+    fig_caption: no
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Within-Subject ANOVA
+
+We have a dataset containing the number of math problems that 15 students were able to complete across 4 help conditions – alone, with a teacher’s aid, with a peer, and with a group.  We are interested in the effect of help condition on the number of math problems students could complete using a repeated-measures ANOVA. 
+
+You will need to download the `baguley.txt` file and save it in your working directory.
+
+## 1. Set working directory, load packages, read in data
+
+
+```{r, eval=T}
+# set working directory
+# (use pull down menus)
+
+# packages
+library(tidyverse)
+library(afex)
+library(pastecs)
+source("baguley.txt")
+```
+
+## 2. Read in data
+
+Our data is contained in a .csv file, so ensure you don’t use read_sav() to load the data into R!  We will be using a function called `read_csv()` instead. Once you load the data, preview it in the console window using `head()`.
+
+### Answer
+
+```{r, eval=T}
+m<-read_csv("math_help.csv")
+head(m)
+```
+
+
+## 3. Pivot From wide to long format
+
+When data is in wide format, each participant is assigned a row and variables are each assigned a column. The tidy approach to R programming uses data in long format, where each observation is assigned a row and all variables are assigned a column. Values for condition variables are repeated across rows in long format.
+We will use the `pivot_longer()` function to convert our data frame into long format. There are some arguments to define within the function:
+
+`data` = the name of the current data frame in wide format
+`cols` = the list of columns to combine observations for each participant
+`names_to` = a name for the new variable that contains the original variable names.  To make things consistent with subsequent code, we are calling this variable `"condition"`.  
+`values_to` = a name for the new variable that contains the original variable values (also enclosed in "")
+
+```{r, eval=T}
+ml <- pivot_longer(data= m,
+cols=c(Alone,TeachersAid,Peer,Group),
+names_to="condition" ,
+values_to="problems" )
+```
+
+## 4. Get group means and standard deviations
+
+Use stat.desc() to get means and SDs using the WIDE data frame.
+
+```{r}
+stat.desc(m, norm = TRUE)
+```
+
+
+## 5. Convert long format data condition to factor variable
+
+In the new restructured / longer dataframe we created (called ml), condition is a character variable. We need to make it a factor for the repeated measures ANOVA. Convert the original variable to a factor (no need to create a new variable since this is not our original data frame).
+
+### Answer
+
+```{r, eval=T}
+ml$condition <- as.factor(ml$condition)
+head(ml)
+```
+## 6. Run repeated-measures ANOVA
+
+Let’s run our repeated-measures ANOVA! We can do this because we have multiple observations across our dependent variable and we want to compare means across variables with repeated observations. Here, we want to investigate the effect of each condition on the number of math problems students could solve.
+
+```{r, eval=F}
+MODEL_NAME <- aov_car(PROBLEM VARIABLE ~ condition +
+Error(SUBJECT/condition), data = DATAFRAME_LONG)
+summary(MODEL_NAME)
+```
+
+### Answer
+
+```{r}
+m1<-aov_car(problems~condition + Error(Subject/condition), data=ml)
+summary(m1)
+```
+
+Examine the ANOVA summary output. What is the Greenhouse-Geisser Epsilon?
+What is the p-value for the condition variable using the epsilon-adjusted degrees of freedom?
+
+
+
+## 7. Check sphericity and compound sphericity/symmetry assumptions
+
+Sphericity assumption assumes that variances of group differences are equal. Compound symmetry is a bit easier to test (it doesn’t require us to calculate all possible group differences and their variances!). Compound symmetry is more restrictive but easier to test, and says that variances and covariances of all conditions are equal to each other.  We can check this assumption with a covariance matrix.
+
+
+```{r}
+cov(m)
+```
+**Just eyeballing this output suggests noticable disparties in the variances,e.g. the "Alone" condition has a variance of .55 problems^2^, while the "Peer" condition has a variance of 1.41 problems^2^.  The covariances also range from -.005 (Alone-Group) to +.36 (Peer-Group).  But the Greenhouse-Geiser epsilon (** $\hat{\epsilon}$ **)  (.87) suggests moderate violations of sphericity.  When we use the adjusted within-subjects ANOVA we get a p-value of** $4 \times 10^{-11}$ **indicating we can reject the null hypothesis that all condition effects are equal to zero in the population.**
+
+
+
+
+## 8. Calculate Cousineau-Morey confidence intervals
+
+It is recommended to use Cousineau-Morey adjusted confidence intervals when reporting confidence intervals for condition means. We can calculate these using the cm.ci() function from the Baugley.txt functions we loaded earlier. We need to use this function on the wide-format data and remove the subject number identifiers before we calculate the CIs.  
+
+Remove subject numbers ahead of CM confidence interval calculation
+
+```{r, eval=F}
+mcm<-subset(m,select=c(Alone, TeachersAid, Peer, Group))
+```
+
+Calculate CM confidence intervals, producing them in a dataframe called `cmci`.
+
+```{r, eval=F}
+cmci <- as.data.frame(cm.ci(data.frame = mcm, conf.level = 0.95, difference = FALSE))
+```
+
+Create new condition variable, `condition`, for the `CMCI` data frame (row names aren’t the most useful)
+
+```{r, eval=F}
+cmci$condition <- rownames(cmci)
+```
+
+# Same syntax as above, all in one chunk:
+
+```{r, eval=T}
+mcm<-subset(m,select=c(Alone, TeachersAid, Peer, Group))
+cmci <- as.data.frame(cm.ci(data.frame = mcm, conf.level = 0.95, difference = FALSE))
+cmci$condition <- rownames(cmci)
+
+```
+
+## 9. Calculate condition means using long format data frame
+
+```{r}
+ml<-group_by(ml,condition)
+summary_long<-summarize(ml, condition_mean=mean(problems))
+ml<-ungroup(ml)
+```
+
+## 10. Merge condition means with Cousineau-Morey confidence intervals
+
+In order to plot our condition means with CM confidence intervals, we need to combine `summary_long` and `CMCI` into one data frame. Both data frames share a variable called “condition”, so we can use the merge() function and combine the data frames using that shared variable information.
+
+```{r, eval=F}
+plot_df <- merge(summary_long, cmci, by = "condition")
+```
+
+## 11. Create a plot to show results
+
+
+Create a plot to show condition means and Cousineau-Morey adjusted confidence intervals.
+
+
+```{r, eval=T, fig.cap="Line graph showing completed math problems by help condition"}
+ggplot(data = plot_df, aes(x = condition, y = condition_mean, group = 1)) +
+geom_line() +
+geom_errorbar(aes(ymin = lower, ymax = upper), width = 0.1) +
+geom_point() +
+labs(title = "Completed Math Problems By Condition",
+y = "Completed Math Problems (M)",
+x = "Help conditions",
+caption = "Error bars are 95% Cousineau-Morey confidence intervals.") +
+  theme_minimal()
+```
