@@ -1,0 +1,308 @@
+---
+title: "Lab 9"
+author: "Joshua Klugman"
+output:
+  html_document:
+    df_print: paged
+    toc: true
+    toc_depth: 2
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+
+library(tidyverse)
+library(haven)
+library(emmeans)
+library(afex)
+library(pastecs)
+library(car)
+source("https://osf.io/download/98b7r/")
+```
+
+# Lab 9 overview
+
+We continue to use `wordsum v2.sav`, a vocabulary test administered to people from different U.S. regions. We have a 2×4 design: city resident (`sized`) and region (`regions`). The outcome is `ws`.
+
+# Problem 1
+
+Load packages and Wilcox functions.
+
+```{r}
+library(afex)
+library(car)
+library(emmeans)
+library(haven)
+source("https://osf.io/download/98b7r/")
+```
+
+# Problem 2
+
+Read in the data.
+
+```{r}
+ws <- read_sav("wordsum v2.sav")
+head(ws)
+```
+
+# Problem 3
+
+Paste your Excel table of cell and marginal means (see key). In this HTML, we compute the table and show it below.
+
+```{r}
+ws$sized_f <- factor(ws$sized, levels = c(0, 1), labels = c("Non-City", "City"))
+ws$regions_f <- factor(ws$regions, levels = c(1, 2, 3, 4), labels = c("Midwest", "Northeast", "South", "West"))
+ws$id <- rownames(ws)
+ws_anova <- aov_car(ws ~ sized_f * regions_f + Error(id), data = ws)
+
+cell <- as.data.frame(emmeans(ws_anova, ~ regions_f * sized_f)) |>
+  select(regions_f, sized_f, emmean) |>
+  pivot_wider(names_from = sized_f, values_from = emmean)
+
+marg_region <- as.data.frame(emmeans(ws_anova, ~ regions_f)) |>
+  select(regions_f, emmean)
+
+marg_sized <- as.data.frame(emmeans(ws_anova, ~ sized_f)) |>
+  select(sized_f, emmean)
+
+cell <- left_join(cell, marg_region, by = "regions_f")
+colnames(cell)[ncol(cell)] <- "Row_Mean"
+
+bottom <- tibble(
+  regions_f = "Column Mean",
+  `Non-City` = marg_sized$emmean[marg_sized$sized_f == "Non-City"],
+  City = marg_sized$emmean[marg_sized$sized_f == "City"],
+  Row_Mean = mean(ws$ws)
+)
+
+cell2 <- bind_rows(cell, bottom)
+cell2
+```
+
+# Problem 4
+
+Create factor versions and ID; verify with two-way tables.
+
+```{r}
+ws$sized_f <- factor(ws$sized, levels = c(0, 1), labels = c("Non-City", "City"))
+ws$regions_f <- factor(ws$regions, levels = c(1, 2, 3, 4), labels = c("Midwest", "Northeast", "South", "West"))
+ws$id <- rownames(ws)
+
+table(ws$sized, ws$sized_f, exclude = NULL)
+
+table(ws$regions, ws$regions_f, exclude = NULL)
+```
+
+# Problem 5
+
+Run the ANOVA, emmeans, and output.
+
+```{r}
+ws_anova <- aov_car(ws ~ sized_f * regions_f + Error(id), data = ws)
+
+em_cell <- emmeans(ws_anova, ~ sized_f * regions_f)
+em_sized <- emmeans(ws_anova, ~ sized_f)
+em_regions <- emmeans(ws_anova, ~ regions_f)
+
+em_cell
+em_sized
+em_regions
+
+summary(ws_anova)
+ws_anova$Anova
+```
+
+# Problem 6
+
+Null hypothesis for the main effect South–West difference:
+
+H0: μ_South = μ_West (marginal means).
+
+# Problem 7
+
+Pairwise contrasts for region (Tukey).
+
+```{r}
+pairs(em_regions, adjust = "tukey")
+```
+
+# Problem 8
+
+Scheffe-adjusted critical value for main effects of region.
+
+```{r}
+alpha <- 0.05
+A <- 4
+an <- as.data.frame(ws_anova$Anova)
+df_error <- an$Df[5]
+
+scheffe_main_region_t <- sqrt((A - 1) * qf(1 - alpha, A - 1, df_error))
+scheffe_main_region_t
+```
+
+# Problem 9
+
+Null hypothesis for the simple effect of city status in the Northeast:
+
+H0: μ_Northeast,City = μ_Northeast,Non-City.
+
+# Problem 10
+
+City vs non-city contrasts within each region.
+
+```{r}
+pairs(em_cell, simple = "sized_f", adjust = "none")
+```
+
+# Problem 11
+
+Bonferroni-adjusted critical value for simple effects of city status (4 regions).
+
+```{r}
+crit_t_city_simple <- qtukey(1 - alpha/4, 2, df_error) / sqrt(2)
+crit_t_city_simple
+```
+
+# Problem 12
+
+Cohen’s d for each city vs non-city contrast.
+
+```{r}
+sc_city <- as.data.frame(pairs(em_cell, simple = "sized_f", adjust = "none"))
+ss <- an$`Sum Sq`
+names(ss) <- row.names(an)
+ss_error <- ss["Residuals"]
+MSE <- ss_error / df_error
+sd_pooled <- sqrt(MSE)
+sc_city$d <- sc_city$estimate / sd_pooled
+sc_city
+```
+
+# Problem 13
+
+Write-up using Bonferroni-adjusted threshold.
+
+```{r}
+sc_city$bonf_p <- p.adjust(sc_city$p.value, method = "bonferroni")
+sc_city
+```
+
+Using the Bonferroni-adjusted threshold (α = .05/4), the city vs non-city contrast is significant in the Midwest and Northeast, but not significant in the South or West. Report direction, effect size, and Bonferroni-adjusted p-values.
+
+# Problem 14
+
+Null hypothesis for Midwest vs Northeast among city dwellers:
+
+H0: μ_Midwest,City = μ_Northeast,City.
+
+# Problem 15
+
+Pairwise contrasts for region among city and non-city dwellers.
+
+```{r}
+pairs(em_cell, simple = "regions_f", adjust = "none")
+```
+
+# Problem 16
+
+Tukey HSD + Bonferroni critical value for region simple effects by city status.
+
+```{r}
+crit_t_region_simple <- qtukey(1 - alpha/2, A, df_error) / sqrt(2)
+crit_t_region_simple
+```
+
+# Problem 17
+
+Contrasts surviving Tukey HSD + Bonferroni.
+
+```{r}
+sc_region <- as.data.frame(pairs(em_cell, simple = "regions_f", adjust = "none"))
+sc_region$survive <- abs(sc_region$t.ratio) >= crit_t_region_simple
+sc_region[sc_region$survive == TRUE, c("contrast", "sized_f", "t.ratio", "p.value")]
+```
+
+# Problem 18
+
+Null hypotheses:
+
+- City dwellers, NE vs MW & W: H0: μ_C,NE − (μ_C,MW + μ_C,W)/2 = 0
+- Non-city dwellers, NE vs MW & W: H0: μ_NC,NE − (μ_NC,MW + μ_NC,W)/2 = 0
+- Interaction contrast: H0: [μ_C,NE − (μ_C,MW + μ_C,W)/2] − [μ_NC,NE − (μ_NC,MW + μ_NC,W)/2] = 0
+
+# Problem 19
+
+Contrast vectors (order: Non-City Midwest, City Midwest, Non-City Northeast, City Northeast, Non-City South, City South, Non-City West, City West):
+
+```{r}
+contrast_city <- c(0, -0.5, 0, 1, 0, 0, 0, -0.5)
+contrast_noncity <- c(-0.5, 0, 1, 0, 0, 0, -0.5, 0)
+contrast_interaction <- contrast_city - contrast_noncity
+
+contrast_city
+contrast_noncity
+contrast_interaction
+```
+
+# Problem 20
+
+Assemble the contrast vectors in a list.
+
+```{r}
+contrast_list <- list(
+  city_NE_vs_MW_W = contrast_city,
+  noncity_NE_vs_MW_W = contrast_noncity,
+  interaction_NE_vs_MW_W = contrast_interaction
+)
+contrast_list
+```
+
+# Problem 21
+
+Calculate the contrasts using the cell emmGrid.
+
+```{r}
+complex_contrasts <- contrast(em_cell, contrast_list, adjust = "none")
+complex_contrasts
+```
+
+# Problem 22
+
+Scheffe and Bonferroni critical values for the complex simple contrasts.
+
+```{r}
+scheffe_simple_t <- sqrt((A - 1) * qf(1 - alpha, A - 1, df_error))
+bonf_simple_t <- qtukey(1 - alpha/2, 2, df_error) / sqrt(2)
+
+scheffe_simple_t
+bonf_simple_t
+```
+
+# Problem 23
+
+Scheffe-adjusted critical value for interaction contrast.
+
+```{r}
+scheffe_interaction_t <- sqrt((A - 1) * (2 - 1) * qf(1 - alpha, (A - 1) * (2 - 1), df_error))
+scheffe_interaction_t
+```
+
+# Problem 24
+
+Cohen’s d for the three complex contrasts.
+
+```{r}
+cc <- as.data.frame(complex_contrasts)
+cc$d <- cc$estimate / sd_pooled
+cc
+```
+
+# Problem 25
+
+Write-up.
+
+The Northeast vs Midwest & West contrast is significant for both city and non-city dwellers, and the interaction contrast is also significant. Report direction, t ratios, p-values, and Cohen’s d from the contrast table above, using the Scheffe and Bonferroni critical values for reference.
+
+# Problem 26
+
+Upload the document to Canvas and verify the submission.
