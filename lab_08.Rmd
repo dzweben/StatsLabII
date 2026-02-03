@@ -1,0 +1,161 @@
+---
+title: "Lab 8"
+author: "Joshua Klugman"
+output: 
+  word_document:
+    highlight: kate
+    fig_caption: no
+    reference_docx: "style_template2.docx"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(emmeans)
+library(haven)
+library(PMCMRplus)
+#source("https://dornsife.usc.edu/assets/sites/239/docs/Rallfun-v40.txt")
+library(tidyverse)
+
+```
+
+# Lab 8 overview
+
+The data in the file `wordsum v2.sav` is a vocabulary test administered to people from different regions of the United States, with scores ranging from 0 to 10. We have a 2×4 design, with our two factors being a city resident (versus not being a city resident; this is variable “sized”) and region (Midwest, Northeast, South, and West; this is variable “regions”). The outcome is the vocabulary score (variable `ws` which is a count variable ranging from 0 correct words to 10 correct words),
+
+
+* Integrate your answers in this Word document .  
+* For any problem asking you to carry out an operation in R, copy and paste your syntax and any R output below the respective question.
+* For questions that ask you to do manual calculations, you should show your work. Using R for manual calculations is allowed and encouraged (show your R syntax and output).
+* For each lab assignment, you should maintain an organized organized syntax file ("script")
+  + With comments prefaced by `#` that explain what you are doing
+  + missteps/mistakes are deleted
+  + in case you lose your work, you can run your script and reproduce your analyses.
+  + Some labs may require you to build on analyses/data cleaning you did in a prior lab and saving scripts easily allow you to do that
+* You need to upload this document to Canvas by the deadline *and check Canvas to make sure your upload took*
+
+## Problem 1 (0 pts)
+
+Load these packages: `afex`, `car`, `emmeans`, `haven`.  If they have not been installed, you will need to install them.
+
+Also load [Rand Wilcox's](https://osf.io/98b7r/) `Rallfun-v45.txt` page of functions.  Wilcox ,  with  `source("https://osf.io/download/98b7r/")`
+
+## Problem 2 (0 pts)
+
+Read in the `wordsum.sav` datafile into the R environment.
+
+## Problem 3 (6 pts)
+
+Look at the value labels for `sized` and `regions` using the `attr(DATAFRAME$VARNAME , "labels")` function.  Create factor versions of these variables.  Use `table(DATAFRAME$VARNAME,DATAFRAME$VARNAME,exclude=NULL)` to **show a cross-tabulation between the original and new factor variable to confirm your data construction was done correctly**.
+
+## Problem 4 (4 pts)
+
+The datafile contains the “superfactor” (`regionsize`) that you’ll need to check your assumptions, but show us you can make your own superfactor based on the city resident and region variables (1 pt).  Carry out two cross-tabulations: one between your superfactor and city status; another between your superfactor and region (1 pt each). 
+
+Syntax to combine multiple factors:
+
+```{r,eval=F}
+DATAFRAME<-group_by(DATAFRAME,FACTORA,FACTORB)
+DATAFRAME<-mutate(DATAFRAME,SUPERFACTOR=cur_group_id())
+DATAFRAME<-ungroup(DATAFRAME)
+```
+
+## Problem 5 (2 pts)
+
+Produce histograms to look at the distribution of the `ws` variable for each cell defined by urban status (`sized`) and region (`regions`).  It is OK to show counts. 
+Syntax:
+
+```{r,eval=F}
+ggplot(data=DATAFRAME,aes(x=VARNAME))+
+  geom_histogram()+
+  facet_grid(FACTORA~FACTORB)
+```
+
+(note I recommend `FACTOR1` be the factor variable with more levels, so the graph will expand vertically not horizontally!)
+
+## Problem 6 (1 pt)
+
+Get skewness statistics and Shapiro-Wilk normality tests for each cell defined by city/non-city status and region.   
+
+Syntax:
+
+```{r,eval=F}
+tapply(DATAFRAME$VARNAME,DATAFRAME$SUPERFACTOR,pastecs::stat.desc,norm=TRUE)
+```
+
+## Problem 7 (1 pt)
+
+Get a Levene's test for equal variances (use the superfactor variable).
+
+## Problem 8 (3 pts)
+Use the MAD-Median rule to detect any outliers.
+
+Syntax:
+
+```{r,eval=F}
+LISTNAME<-tapply(DATAFRAME$DEPENDENTVARIABLE, DATAFRAME$FACTORVARIABLE,outpro)
+LISTNAME
+# do for each group with outliers:
+DATAFRAME$DEPENDENTVARIABLE[DATAFRAME$FACTORVARIABLE=="GROUP NAME"][LISTNAME["GROUP NAME"]$`GROUP NAME`$out.id]
+```
+
+## Problem 9 (5 pts)
+
+Write-up your diagnostics, in three sentences MAXIMUM.
+
+## Problem 10 (1 pts)
+
+Have R produce an ID variable.
+
+Syntax:
+
+```{r,eval=F}
+DATAFRAME$IDVARNAME<-rownames(DATAFRAME)
+```
+
+## Problem 11 (3 pts)
+
+Have R produce cell and marginal means
+
+Syntax:
+
+```{r,eval=F}
+ANOVA_TABLE_NAME<-aov_car(OUTCOME~FACTOR1*FACTOR2+Error(IDVARNAME),data=DATAFRAME)
+# cell means
+emmeans(ANOVA_TABLE_NAME,~FACTORA*FACTORB)
+# marginal means
+emmeans(ANOVA_TABLE_NAME,~FACTORA)
+emmeans(ANOVA_TABLE_NAME,~FACTORB)
+
+```
+
+## Problem 12 (5 pts)
+
+Make a table in Excel, with rows corresponding to one factor (preferably the factor with the most levels) and columns correspondgn to the other factor.  The table should be polished with a clear title, column and row headings, consistent alignment and rounding, and judicious use of borders to set off the title and headers (do NOT use "all borders"!).
+
+## Problem 13 (4 pts)
+
+Explain whether or not it is safe interpreting the main effects of city status and region.  In other words, I am asking if city status has a consistent effect across the regions, and if the rank order of the regions is the same in cities and non-cities.
+
+## Problem 14 (1 pt)
+
+Have R print to the console the results of the two-way ANOVA.
+
+Syntax (do BOTH commands):
+
+```{r, eval=F}
+summary(ANOVA_TABLE_NAME)
+ANOVA_TABLE_NAME$Anova
+```
+
+## Problem 15 (6 pts)
+
+Calculate $\omega^2_{partial}$ for each effect.
+
+
+## Problem 16 (5 pts)
+
+Write up the results of the omnibus test as you would for publicatiuon.
+
+## Problem 17 (0 points)
+
+Upload your this document to Canvas. Double-check your submission to make sure it took.
