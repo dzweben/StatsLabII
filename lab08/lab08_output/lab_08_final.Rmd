@@ -26,9 +26,11 @@ source("https://osf.io/download/98b7r/")
 
 The data in the file `wordsum v2.sav` is a vocabulary test administered to people from different regions of the United States, with scores ranging from 0 to 10. We have a 2×4 design, with our two factors being a city resident (versus not being a city resident; this is variable `sized`) and region (Midwest, Northeast, South, and West; this is variable `regions`). The outcome is the vocabulary score (variable `ws` which is a count variable ranging from 0 correct words to 10 correct words).
 
-# Problem 1
+# Problem 1 (0 pts)
 
-Load packages and Wilcox functions.
+Load these packages: `afex`, `car`, `emmeans`, `haven`. If they have not been installed, you will need to install them.
+
+Also load Rand Wilcox's `Rallfun-v45.txt` page of functions, with `source("https://osf.io/download/98b7r/")`.
 
 ```{r}
 # packages
@@ -39,17 +41,17 @@ library(haven)
 source("https://osf.io/download/98b7r/")
 ```
 
-# Problem 2
+# Problem 2 (0 pts)
 
-Read in the `wordsum v2.sav` datafile.
+Read in the `wordsum v2.sav` datafile into the R environment.
 
 ```{r}
 ws <- read_sav("wordsum v2.sav")
 ```
 
-# Problem 3
+# Problem 3 (6 pts)
 
-Inspect labels, create factor versions, and verify construction.
+Look at the value labels for `sized` and `regions` using the `attr(DATAFRAME$VARNAME , "labels")` function. Create factor versions of these variables. Use `table(DATAFRAME$VARNAME,DATAFRAME$VARNAME,exclude=NULL)` to show a cross-tabulation between the original and new factor variable to confirm your data construction was done correctly.
 
 ```{r}
 attr(ws$sized, "labels")
@@ -70,9 +72,9 @@ table(ws$sized, ws$sized_f, exclude = NULL)
 table(ws$regions, ws$regions_f, exclude = NULL)
 ```
 
-# Problem 4
+# Problem 4 (4 pts)
 
-Create a superfactor and cross-tabulate with city status and region.
+The datafile contains the “superfactor” (`regionsize`) that you’ll need to check your assumptions, but show us you can make your own superfactor based on the city resident and region variables (1 pt). Carry out two cross-tabulations: one between your superfactor and city status; another between your superfactor and region (1 pt each).
 
 ```{r}
 ws <- group_by(ws, sized_f, regions_f)
@@ -94,9 +96,9 @@ table(ws$regionsize_new_f, ws$sized_f, exclude = NULL)
 table(ws$regionsize_new_f, ws$regions_f, exclude = NULL)
 ```
 
-# Problem 5
+# Problem 5 (2 pts)
 
-Histograms by city status and region.
+Produce histograms to look at the distribution of the `ws` variable for each cell defined by urban status (`sized`) and region (`regions`). It is OK to show counts.
 
 ```{r, fig.cap="Vocabulary scores by region and city status"}
 ggplot(data = ws, aes(x = ws)) +
@@ -104,25 +106,25 @@ ggplot(data = ws, aes(x = ws)) +
   facet_grid(regions_f ~ sized_f)
 ```
 
-# Problem 6
+# Problem 6 (1 pt)
 
-Skewness statistics and Shapiro-Wilk tests for each cell.
+Get skewness statistics and Shapiro-Wilk normality tests for each cell defined by city/non-city status and region.
 
 ```{r}
 tapply(ws$ws, ws$regionsize_new_f, pastecs::stat.desc, norm = TRUE)
 ```
 
-# Problem 7
+# Problem 7 (1 pt)
 
-Levene's test for homogeneity of variance.
+Get a Levene's test for equal variances (use the superfactor variable).
 
 ```{r}
 car::leveneTest(ws ~ regionsize_new_f, data = ws, center = mean)
 ```
 
-# Problem 8
+# Problem 8 (3 pts)
 
-Use MAD-Median rule to detect outliers.
+Use the MAD-Median rule to detect any outliers.
 
 ```{r}
 o <- tapply(ws$ws, ws$regionsize_new_f, outpro)
@@ -132,23 +134,23 @@ o
 # ws$ws[ws$regionsize_new_f=="GROUP NAME"][o[["GROUP NAME"]]$out.id]
 ```
 
-# Problem 9
+# Problem 9 (5 pts)
 
-Diagnostics write-up (3 sentences maximum).
+Write-up your diagnostics, in three sentences MAXIMUM.
 
 Based on the histograms and skewness statistics, the distributions appear only modestly skewed across cells. Shapiro-Wilk tests indicate statistically significant departures from normality in each cell (all p-values < .01). Levene’s test suggests homogeneity of variances across the eight cells (p = .8907), and the MAD-Median rule indicates no outliers in any cell.
 
-# Problem 10
+# Problem 10 (1 pts)
 
-Create an ID variable.
+Have R produce an ID variable.
 
 ```{r}
 ws$id <- rownames(ws)
 ```
 
-# Problem 11
+# Problem 11 (3 pts)
 
-Cell and marginal means.
+Have R produce cell and marginal means.
 
 ```{r}
 ws_anova <- aov_car(ws ~ sized_f * regions_f + Error(id), data = ws)
@@ -161,9 +163,9 @@ emmeans(ws_anova, ~ sized_f)
 emmeans(ws_anova, ~ regions_f)
 ```
 
-# Problem 12
+# Problem 12 (5 pts)
 
-Excel table of cell means.
+Make a table in Excel, with rows corresponding to one factor (preferably the factor with the most levels) and columns corresponding to the other factor. The table should be polished with a clear title, column and row headings, consistent alignment and rounding, and judicious use of borders to set off the title and headers (do NOT use "all borders"!).
 
 ```{r}
 # cell means table (paste into Excel and format)
@@ -176,36 +178,55 @@ cell_table
 
 Create a 4x2 table in Excel with rows as `regions_f` and columns as `sized_f`. Use the cell means above, round to two decimals, and format with a clear title and minimal borders.
 
-# Problem 13
+# Problem 13 (4 pts)
 
-Interpretability of main effects.
+Explain whether or not it is safe interpreting the main effects of city status and region. In other words, I am asking if city status has a consistent effect across the regions, and if the rank order of the regions is the same in cities and non-cities.
 
 The interaction between city status and region is significant, so the main effects are not safe to interpret. The city vs. non-city differences are not consistent across regions, and the rank order of regions changes across city status.
 
-# Problem 14
+# Problem 14 (1 pt)
 
-Two-way ANOVA output.
+Have R print to the console the results of the two-way ANOVA.
 
 ```{r}
 summary(ws_anova)
 ws_anova$Anova
 ```
 
-# Problem 15
+# Problem 15 (6 pts)
 
-Calculate partial omega squared for each effect.
+Calculate ω²_partial for each effect.
 
 ```{r}
-# Use the ANOVA table from ws_anova$Anova and compute partial omega squared
-# for sized_f, regions_f, and sized_f:regions_f.
+an <- as.data.frame(ws_anova$Anova)
+ss <- an$`Sum Sq`
+df <- an$Df
+names(ss) <- row.names(an)
+names(df) <- row.names(an)
+ss_error <- ss["Residuals"]
+df_error <- df["Residuals"]
+mse <- ss_error / df_error
+effects <- setdiff(row.names(an), c("(Intercept)", "Residuals"))
+ss_effect <- ss[effects]
+df_effect <- df[effects]
+omega_p <- (ss_effect - df_effect * mse) / (ss_effect + ss_error + mse)
+omega_table <- data.frame(
+  effect = effects,
+  df = df_effect,
+  SS = ss_effect,
+  SS_error = ss_error,
+  MSE = mse,
+  omega_p = omega_p
+)
+omega_table
 ```
 
-# Problem 16
+# Problem 16 (5 pts)
 
-Write up the omnibus results (journal style).
+Write up the results of the omnibus test as you would for publication.
 
 A two-way ANOVA showed a significant main effect of city status, F(1, 312) = 6.19, p = .013, ω²p = 0.016, and a significant main effect of region, F(3, 312) = 3.03, p = .030, ω²p = 0.019. There was also a significant city status × region interaction, F(3, 312) = 18.68, p < .001, ω²p = 0.144. Because the interaction is significant, interpretation should focus on the cell means rather than the marginal main effects.
 
-# Problem 17
+# Problem 17 (0 points)
 
-Upload the document to Canvas and verify the submission.
+Upload your this document to Canvas. Double-check your submission to make sure it took.
