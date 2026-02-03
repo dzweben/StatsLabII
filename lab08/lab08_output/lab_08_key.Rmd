@@ -1,0 +1,396 @@
+---
+title: "Lab 8"
+author: "Joshua Klugman"
+output:
+  word_document:
+    reference_docx: "../lab_08.docx"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+root_dir <- normalizePath("..")
+knitr::opts_knit$set(root.dir = root_dir)
+.libPaths(c(file.path(root_dir, "rlib"), .libPaths()))
+
+library(tidyverse)
+library(haven)
+library(emmeans)
+library(afex)
+library(pastecs)
+library(car)
+source(file.path(root_dir, "Rallfun-v45.txt"))
+```
+
+# Lab 8 overview
+
+The data in the file `wordsum v2.sav` is a vocabulary test administered to people from different regions of the United States, with scores ranging from 0 to 10. We have a 2×4 design, with our two factors being a city resident (versus not being a city resident; this is variable `sized`) and region (Midwest, Northeast, South, and West; this is variable `regions`). The outcome is the vocabulary score (variable `ws` which is a count variable ranging from 0 correct words to 10 correct words).
+
+## Problem 1 (0 pts)
+
+Load packages and Wilcox functions.
+
+Syntax:
+
+```{r p1_syntax, eval=FALSE}
+library(afex)
+library(car)
+library(emmeans)
+library(haven)
+source("Rallfun-v45.txt")
+```
+
+Output:
+
+```{r p1_output, echo=FALSE}
+library(afex)
+library(car)
+library(emmeans)
+library(haven)
+source("Rallfun-v45.txt")
+```
+
+## Problem 2 (0 pts)
+
+Read in the `wordsum v2.sav` datafile.
+
+Syntax:
+
+```{r p2_syntax, eval=FALSE}
+ws <- read_sav("wordsum v2.sav")
+head(ws)
+```
+
+Output:
+
+```{r p2_output, echo=FALSE}
+ws <- read_sav("wordsum v2.sav")
+head(ws)
+```
+
+## Problem 3 (6 pts)
+
+Look at the value labels for `sized` and `regions`, create factor versions, and verify construction.
+
+Syntax:
+
+```{r p3_syntax, eval=FALSE}
+attr(ws$sized, "labels")
+attr(ws$regions, "labels")
+
+ws$sized_f <- factor(ws$sized,
+                     levels = c(0, 1),
+                     labels = c("Non-City", "City"))
+
+ws$regions_f <- factor(ws$regions,
+                       levels = c(1, 2, 3, 4),
+                       labels = c("Midwest", "Northeast", "South", "West"))
+
+table(ws$sized, ws$sized_f, exclude = NULL)
+
+table(ws$regions, ws$regions_f, exclude = NULL)
+```
+
+Output:
+
+```{r p3_output, echo=FALSE}
+attr(ws$sized, "labels")
+attr(ws$regions, "labels")
+
+ws$sized_f <- factor(ws$sized,
+                     levels = c(0, 1),
+                     labels = c("Non-City", "City"))
+
+ws$regions_f <- factor(ws$regions,
+                       levels = c(1, 2, 3, 4),
+                       labels = c("Midwest", "Northeast", "South", "West"))
+
+table(ws$sized, ws$sized_f, exclude = NULL)
+
+table(ws$regions, ws$regions_f, exclude = NULL)
+```
+
+## Problem 4 (4 pts)
+
+Create a superfactor based on the city resident and region variables, and cross-tabulate.
+
+Syntax:
+
+```{r p4_syntax, eval=FALSE}
+ws <- group_by(ws, sized_f, regions_f)
+ws <- mutate(ws, regionsize_new = cur_group_id())
+ws <- ungroup(ws)
+
+ws$regionsize_new_f <- factor(ws$regionsize_new,
+                              levels = 1:8,
+                              labels = c("Midwest Non-City", "Northeast Non-City",
+                                         "South Non-City", "West Non-City",
+                                         "Midwest City", "Northeast City",
+                                         "South City", "West City"))
+
+table(ws$regionsize_new_f, ws$sized_f, exclude = NULL)
+
+table(ws$regionsize_new_f, ws$regions_f, exclude = NULL)
+```
+
+Output:
+
+```{r p4_output, echo=FALSE}
+ws <- group_by(ws, sized_f, regions_f)
+ws <- mutate(ws, regionsize_new = cur_group_id())
+ws <- ungroup(ws)
+
+ws$regionsize_new_f <- factor(ws$regionsize_new,
+                              levels = 1:8,
+                              labels = c("Midwest Non-City", "Northeast Non-City",
+                                         "South Non-City", "West Non-City",
+                                         "Midwest City", "Northeast City",
+                                         "South City", "West City"))
+
+table(ws$regionsize_new_f, ws$sized_f, exclude = NULL)
+
+table(ws$regionsize_new_f, ws$regions_f, exclude = NULL)
+```
+
+## Problem 5 (2 pts)
+
+Produce histograms for each cell.
+
+Syntax:
+
+```{r p5_syntax, eval=FALSE}
+ggplot(data = ws, aes(x = ws)) +
+  geom_histogram() +
+  facet_grid(regions_f ~ sized_f)
+```
+
+Output:
+
+```{r p5_output, echo=FALSE, fig.cap="Vocabulary scores by region and city status"}
+ggplot(data = ws, aes(x = ws)) +
+  geom_histogram() +
+  facet_grid(regions_f ~ sized_f)
+```
+
+## Problem 6 (1 pt)
+
+Skewness statistics and Shapiro-Wilk tests for each cell.
+
+Syntax:
+
+```{r p6_syntax, eval=FALSE}
+tapply(ws$ws, ws$regionsize_new_f, pastecs::stat.desc, norm = TRUE)
+```
+
+Output:
+
+```{r p6_output, echo=FALSE}
+tapply(ws$ws, ws$regionsize_new_f, pastecs::stat.desc, norm = TRUE)
+```
+
+## Problem 7 (1 pt)
+
+Levene's test for equal variances.
+
+Syntax:
+
+```{r p7_syntax, eval=FALSE}
+car::leveneTest(ws ~ regionsize_new_f, data = ws, center = mean)
+```
+
+Output:
+
+```{r p7_output, echo=FALSE}
+car::leveneTest(ws ~ regionsize_new_f, data = ws, center = mean)
+```
+
+## Problem 8 (3 pts)
+
+Use the MAD-Median rule to detect outliers.
+
+Syntax:
+
+```{r p8_syntax, eval=FALSE}
+o <- tapply(ws$ws, ws$regionsize_new_f, outpro)
+o
+# If outliers appear in any group, run this for each group with outliers:
+# ws$ws[ws$regionsize_new_f=="GROUP NAME"][o[["GROUP NAME"]]$out.id]
+```
+
+Output:
+
+```{r p8_output, echo=FALSE}
+o <- tapply(ws$ws, ws$regionsize_new_f, outpro)
+o
+```
+
+## Problem 9 (5 pts)
+
+Diagnostics write-up (3 sentences maximum).
+
+Based on the histograms and skewness statistics, the distributions appear only modestly skewed across cells. Shapiro-Wilk tests indicate statistically significant departures from normality in each cell (all p-values < .01). Levene’s test suggests homogeneity of variances across the eight cells (p = .8907), and the MAD-Median rule indicates no outliers in any cell.
+
+## Problem 10 (1 pt)
+
+Create an ID variable.
+
+Syntax:
+
+```{r p10_syntax, eval=FALSE}
+ws$id <- rownames(ws)
+```
+
+Output:
+
+```{r p10_output, echo=FALSE}
+ws$id <- rownames(ws)
+```
+
+## Problem 11 (3 pts)
+
+Produce cell and marginal means.
+
+Syntax:
+
+```{r p11_syntax, eval=FALSE}
+ws_anova <- aov_car(ws ~ sized_f * regions_f + Error(id), data = ws)
+
+emmeans(ws_anova, ~ sized_f * regions_f)
+
+emmeans(ws_anova, ~ sized_f)
+emmeans(ws_anova, ~ regions_f)
+```
+
+Output:
+
+```{r p11_output, echo=FALSE}
+ws_anova <- aov_car(ws ~ sized_f * regions_f + Error(id), data = ws)
+
+emmeans(ws_anova, ~ sized_f * regions_f)
+
+emmeans(ws_anova, ~ sized_f)
+emmeans(ws_anova, ~ regions_f)
+```
+
+## Problem 12 (5 pts)
+
+Excel table of cell means.
+
+Syntax:
+
+```{r p12_syntax, eval=FALSE}
+cell_means <- as.data.frame(emmeans(ws_anova, ~ regions_f * sized_f))
+cell_table <- cell_means |>
+  dplyr::select(regions_f, sized_f, emmean) |>
+  pivot_wider(names_from = sized_f, values_from = emmean)
+cell_table
+```
+
+Output:
+
+```{r p12_output, echo=FALSE}
+cell_means <- as.data.frame(emmeans(ws_anova, ~ regions_f * sized_f))
+cell_table <- cell_means |>
+  dplyr::select(regions_f, sized_f, emmean) |>
+  pivot_wider(names_from = sized_f, values_from = emmean)
+cell_table
+```
+
+Create a 4x2 table in Excel with rows as `regions_f` and columns as `sized_f`. Use the cell means above, round to two decimals, and format with a clear title and minimal borders.
+
+## Problem 13 (4 pts)
+
+Explain whether it is safe to interpret the main effects.
+
+The interaction between city status and region is significant, so the main effects are not safe to interpret. The city vs. non-city differences are not consistent across regions, and the rank order of regions changes across city status.
+
+## Problem 14 (1 pt)
+
+Two-way ANOVA output.
+
+Syntax:
+
+```{r p14_syntax, eval=FALSE}
+summary(ws_anova)
+ws_anova$Anova
+```
+
+Output:
+
+```{r p14_output, echo=FALSE}
+summary(ws_anova)
+ws_anova$Anova
+```
+
+## Problem 15 (6 pts)
+
+Calculate partial omega squared for each effect.
+
+Syntax:
+
+```{r p15_syntax, eval=FALSE}
+an <- as.data.frame(ws_anova$Anova)
+ss <- an$`Sum Sq`
+df <- an$Df
+names(ss) <- row.names(an)
+names(df) <- row.names(an)
+
+ss_error <- ss["Residuals"]
+df_error <- df["Residuals"]
+mse <- ss_error / df_error
+
+effects <- setdiff(row.names(an), c("(Intercept)", "Residuals"))
+ss_effect <- ss[effects]
+df_effect <- df[effects]
+
+omega_p <- (ss_effect - df_effect * mse) / (ss_effect + ss_error + mse)
+
+omega_table <- data.frame(
+  effect = effects,
+  df = df_effect,
+  SS = ss_effect,
+  SS_error = ss_error,
+  MSE = mse,
+  omega_p = omega_p
+)
+omega_table
+```
+
+Output:
+
+```{r p15_output, echo=FALSE}
+an <- as.data.frame(ws_anova$Anova)
+ss <- an$`Sum Sq`
+df <- an$Df
+names(ss) <- row.names(an)
+names(df) <- row.names(an)
+
+ss_error <- ss["Residuals"]
+df_error <- df["Residuals"]
+mse <- ss_error / df_error
+
+effects <- setdiff(row.names(an), c("(Intercept)", "Residuals"))
+ss_effect <- ss[effects]
+df_effect <- df[effects]
+
+omega_p <- (ss_effect - df_effect * mse) / (ss_effect + ss_error + mse)
+
+omega_table <- data.frame(
+  effect = effects,
+  df = df_effect,
+  SS = ss_effect,
+  SS_error = ss_error,
+  MSE = mse,
+  omega_p = omega_p
+)
+omega_table
+```
+
+## Problem 16 (5 pts)
+
+Write up the results of the omnibus test.
+
+A two-way ANOVA showed a significant main effect of city status, F(1, 312) = 6.19, p = .013, ω²p = 0.016, and a significant main effect of region, F(3, 312) = 3.03, p = .030, ω²p = 0.019. There was also a significant city status × region interaction, F(3, 312) = 18.68, p < .001, ω²p = 0.144. Because the interaction is significant, interpretation should focus on the cell means rather than the marginal main effects.
+
+## Problem 17 (0 pts)
+
+Upload this document to Canvas and verify the submission.
