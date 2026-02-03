@@ -11,6 +11,8 @@ output:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 
+setwd("/Users/dannyzweben/Desktop/GradClass/Y1/S2/StatsII/StatsII-Labs/lab08")
+
 library(tidyverse)
 library(haven)
 library(emmeans)
