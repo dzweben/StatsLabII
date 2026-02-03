@@ -1,4 +1,6 @@
-# Lab 08 — WordSum V2 (Two-Way ANOVA)
+# Lab 08 — WordSum V2 (Two‑Way ANOVA)
+
+> Precision diagnostics. Clean contrasts. Reproducible by design.
 
 ## Research Question
 Does vocabulary performance (`ws`, 0–10) differ by **city status** (City vs. Non‑City) and **U.S. region** (Midwest, Northeast, South, West), and is the city effect consistent across regions?
@@ -9,6 +11,12 @@ Does vocabulary performance (`ws`, 0–10) differ by **city status** (City vs. N
 - Factors: `sized` (City vs. Non‑City), `regions` (4 levels)
 - Design: 2 × 4 between‑subjects factorial
 
+## Method Stack
+- **Modeling:** `afex` (`aov_car`), `emmeans`
+- **Diagnostics:** `pastecs`, `car`, `Rallfun‑v45`
+- **Wrangling:** `tidyverse`, `haven`
+- **Reporting:** RMarkdown → HTML + DOCX
+
 ## Analysis Pipeline (Reproducible)
 - **Data prep**: create factor versions of `sized` and `regions`
 - **Superfactor**: build 8‑level `regionsize` for diagnostics
@@ -16,6 +24,14 @@ Does vocabulary performance (`ws`, 0–10) differ by **city status** (City vs. N
 - **Model**: two‑way ANOVA (`aov_car`)
 - **Follow‑ups**: cell means + marginal means (`emmeans`)
 - **Effect size**: partial ω² for each effect
+
+## Repro Steps (Fast Path)
+```r
+# from lab08/
+rmarkdown::render("lab08_output/lab_08_key.Rmd",
+                  output_dir = "lab08_output",
+                  output_file = "lab_08.docx key.docx")
+```
 
 ## Visuals
 
@@ -52,3 +68,6 @@ emmeans(ws_anova, ~ sized_f * regions_f)
 ## Repo Notes
 - Local dependencies stored in `lab08/rlib/` (ignored by git)
 - Wilcox functions: `lab08/Rallfun-v45.txt`
+
+## Changelog
+- **2026‑02‑03**: Added full answer key, DOCX replica, embedded Excel‑style table image, and README visuals.
