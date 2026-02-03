@@ -1,13 +1,14 @@
 # Lab 8 script
 
 # packages
+.libPaths(c("rlib", .libPaths()))
 library(tidyverse)
 library(haven)
 library(emmeans)
 library(afex)
 library(pastecs)
 library(car)
-source("https://osf.io/download/98b7r/")
+source("Rallfun-v45.txt")
 
 # read data
 ws <- read_sav("wordsum v2.sav")
@@ -75,6 +76,29 @@ ws$id <- rownames(ws)
 ws_anova <- aov_car(ws ~ sized_f * regions_f + Error(id), data = ws)
 summary(ws_anova)
 ws_anova$Anova
+
+# omega partial
+an <- as.data.frame(ws_anova$Anova)
+ss <- an$`Sum Sq`
+df <- an$Df
+names(ss) <- row.names(an)
+names(df) <- row.names(an)
+ss_error <- ss["Residuals"]
+df_error <- df["Residuals"]
+mse <- ss_error / df_error
+effects <- setdiff(row.names(an), c("(Intercept)", "Residuals"))
+ss_effect <- ss[effects]
+df_effect <- df[effects]
+omega_p <- (ss_effect - df_effect * mse) / (ss_effect + ss_error + mse)
+omega_table <- data.frame(
+  effect = effects,
+  df = df_effect,
+  SS = ss_effect,
+  SS_error = ss_error,
+  MSE = mse,
+  omega_p = omega_p
+)
+omega_table
 
 # cell means
 emmeans(ws_anova, ~ sized_f * regions_f)

@@ -10,6 +10,10 @@ output:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+root_dir <- normalizePath("..")
+knitr::opts_knit$set(root.dir = root_dir)
+
+.libPaths(c(file.path(root_dir, "rlib"), .libPaths()))
 
 library(tidyverse)
 library(haven)
@@ -17,7 +21,7 @@ library(emmeans)
 library(afex)
 library(pastecs)
 library(car)
-source("https://osf.io/download/98b7r/")
+source(file.path(root_dir, "Rallfun-v45.txt"))
 ```
 
 # Lab 8 overview
@@ -134,7 +138,7 @@ o
 
 Diagnostics write-up (3 sentences maximum).
 
-Based on the histograms and skewness statistics, the distributions appear only modestly skewed across cells. Shapiro-Wilk tests indicate statistically significant departures from normality in each cell (all p-values < .01). Levene’s test suggests homogeneity of variances across the eight cells (p = .8907), and the MAD-Median rule results above should be checked for any outliers.
+Based on the histograms and skewness statistics, the distributions appear only modestly skewed across cells. Shapiro-Wilk tests indicate statistically significant departures from normality in each cell (all p-values < .01). Levene’s test suggests homogeneity of variances across the eight cells (p = .8907), and the MAD-Median rule indicates no outliers in any cell.
 
 # Problem 10
 
@@ -163,13 +167,15 @@ emmeans(ws_anova, ~ regions_f)
 
 Excel table of cell means.
 
-Create an 4x2 table in Excel with rows as `regions_f` and columns as `sized_f`. Use the cell means from Problem 11, round to two decimals, and format with a clear title and minimal borders.
+```{r}\n# cell means table (paste into Excel and format)\ncell_means <- as.data.frame(emmeans(ws_anova, ~ regions_f * sized_f))\ncell_table <- cell_means |>\n  select(regions_f, sized_f, emmean) |>\n  pivot_wider(names_from = sized_f, values_from = emmean)\ncell_table\n```
+
+Create a 4x2 table in Excel with rows as `regions_f` and columns as `sized_f`. Use the cell means above, round to two decimals, and format with a clear title and minimal borders.
 
 # Problem 13
 
 Interpretability of main effects.
 
-Use the cell means and interaction pattern to determine whether the main effects are safe to interpret (consistent city effect across regions and consistent region rank order across city status).
+The interaction between city status and region is significant, so the main effects are not safe to interpret. The city vs. non-city differences are not consistent across regions, and the rank order of regions changes across city status.
 
 # Problem 14
 
@@ -185,15 +191,38 @@ ws_anova$Anova
 Calculate partial omega squared for each effect.
 
 ```{r}
-# Use the ANOVA table from ws_anova$Anova and compute partial omega squared
-# for sized_f, regions_f, and sized_f:regions_f.
+an <- as.data.frame(ws_anova$Anova)
+ss <- an$`Sum Sq`
+df <- an$Df
+names(ss) <- row.names(an)
+names(df) <- row.names(an)
+
+ss_error <- ss["Residuals"]
+df_error <- df["Residuals"]
+mse <- ss_error / df_error
+
+effects <- setdiff(row.names(an), c("(Intercept)", "Residuals"))
+ss_effect <- ss[effects]
+df_effect <- df[effects]
+
+omega_p <- (ss_effect - df_effect * mse) / (ss_effect + ss_error + mse)
+
+omega_table <- data.frame(
+  effect = effects,
+  df = df_effect,
+  SS = ss_effect,
+  SS_error = ss_error,
+  MSE = mse,
+  omega_p = omega_p
+)
+omega_table
 ```
 
 # Problem 16
 
 Write up the omnibus results (journal style).
 
-Report the two-way ANOVA results including F, df, p, and partial omega squared for each effect.
+A two-way ANOVA showed a significant main effect of city status, F(1, 312) = 6.19, p = .013, ω²p = 0.016, and a significant main effect of region, F(3, 312) = 3.03, p = .030, ω²p = 0.019. There was also a significant city status × region interaction, F(3, 312) = 18.68, p < .001, ω²p = 0.144. Because the interaction is significant, interpretation should focus on the cell means rather than the marginal main effects.
 
 # Problem 17
 
