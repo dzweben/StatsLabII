@@ -90,7 +90,7 @@ ws_anova$Anova
 
 Write a null hypothesis testing the main effect of the South-West difference.
 
-H0: μ_South = μ_West (marginal means).
+H0: μ_South − μ_West = 0 (marginal means).
 
 # Problem 7 (1 pt)
 
@@ -118,7 +118,7 @@ scheffe_main_region_t
 
 Write the null hypothesis for the simple effect of city status for people living in the Northeast.
 
-H0: μ_Northeast,City = μ_Northeast,Non-City.
+H0: μ_Northeast,City − μ_Northeast,Non‑City = 0.
 
 # Problem 10 (1 pts)
 
@@ -167,7 +167,7 @@ Using the Bonferroni-adjusted threshold (α = .05/4), the city vs non-city contr
 
 Write a null hypothesis for the simple effect of Midwest versus Northeast, among city dwellers.
 
-H0: μ_Midwest,City = μ_Northeast,City.
+H0: μ_Midwest,City − μ_Northeast,City = 0.
 
 # Problem 15 (1 pt)
 
