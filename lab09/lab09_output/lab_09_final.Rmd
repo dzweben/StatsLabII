@@ -161,7 +161,7 @@ sc_city$bonf_p <- p.adjust(sc_city$p.value, method = "bonferroni")
 sc_city
 ```
 
-Using the Bonferroni-adjusted threshold (α = .05/4), the city vs non-city contrast is significant in the Midwest and Northeast, but not significant in the South or West. Report direction, effect size, and Bonferroni-adjusted p-values.
+APA-style write-up (Bonferroni-adjusted): In the Midwest, city dwellers scored higher than non-city dwellers, t(312) = 2.96, p_bonf = .013, d = 0.66. In the Northeast, non-city dwellers scored higher than city dwellers, t(312) = 7.23, p_bonf < .001, d = 1.62. The South and West comparisons were not significant (both p_bonf = 1.00).
 
 # Problem 14 (1 pt)
 
@@ -278,7 +278,7 @@ cc
 
 Write-up the Northeast vs Midwest & West contrasts (and interaction contrast) as you would for a publication.
 
-The Northeast vs Midwest & West contrast is significant for both city and non-city dwellers, and the interaction contrast is also significant. Report direction, t ratios, p-values, and Cohen’s d from the contrast table above, using the Scheffe and Bonferroni critical values for reference.
+APA-style write-up: For city dwellers, the Northeast vs (Midwest & West) contrast was significant, t(312) = 5.61, p < .001, d = 1.09, indicating lower Northeast scores than the average of Midwest and West for city residents (estimate = -1.03). For non-city dwellers, the same contrast was significant, t(312) = 3.83, p = .0002, d = 0.74, indicating higher Northeast scores than the average of Midwest and West (estimate = 0.70). The interaction contrast was significant, t(312) = 6.67, p < .001, d = 1.83, showing that the Northeast advantage differs sharply by city status.
 
 # Problem 26 (0 points)
 
