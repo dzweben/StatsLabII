@@ -155,7 +155,7 @@ ws_anova$Anova
 
 Write a null hypothesis testing the main effect of the South-West difference.
 
-Null: there is no difference between the South and West marginal means.
+Null: there is no difference between the South and West marginal means. Formula: H0: (-1)*μ_S + (1)*μ_W = 0.
 
 ## Problem 7 (1 pt)
 
@@ -205,7 +205,7 @@ scheffe_main_region_t
 
 Write the null hypothesis for the simple effect of city status for people living in the Northeast.
 
-Null: within the Northeast, city and non‑city population means are equal.
+Null: within the Northeast, city and non‑city population means are equal. Formula: H0: (-1)*μ_C,NE + (1)*μ_NC,NE = 0.
 
 ## Problem 10 (1 pt)
 
@@ -286,7 +286,7 @@ APA-style write-up (Bonferroni-adjusted): In the Midwest, city dwellers scored h
 
 Write a null hypothesis for the simple effect of Midwest versus Northeast, among city dwellers.
 
-Null: among city dwellers, the Midwest and Northeast population means are equal.
+Null: among city dwellers, the Midwest and Northeast population means are equal. Formula: H0: (-1)*μ_C,MW + (1)*μ_C,NE = 0.
 
 ## Problem 15 (1 pt)
 
@@ -340,9 +340,9 @@ Write three null hypotheses:
 * the simple effect of Northeast vs Midwest and West, among non-city dwellers.
 * the interaction contrast comparing the above two simple effects
 
-- City dwellers, NE vs MW & W: Null: among city dwellers, the Northeast mean equals the average of Midwest and West (no Northeast advantage).
-- Non-city dwellers, NE vs MW & W: Null: among non‑city dwellers, the Northeast mean equals the average of Midwest and West (no Northeast advantage).
-- Interaction contrast: Null: the Northeast vs (Midwest & West) contrast is the same for city and non‑city dwellers (no interaction contrast).
+- City dwellers, NE vs MW & W: Null: among city dwellers, the Northeast mean equals the average of Midwest and West (no Northeast advantage). Formula: H0: (-0.5)*μ_C,MW + (1)*μ_C,NE + (-0.5)*μ_C,W = 0.
+- Non-city dwellers, NE vs MW & W: Null: among non‑city dwellers, the Northeast mean equals the average of Midwest and West (no Northeast advantage). Formula: H0: (-0.5)*μ_NC,MW + (1)*μ_NC,NE + (-0.5)*μ_NC,W = 0.
+- Interaction contrast: Null: the Northeast vs (Midwest & West) contrast is the same for city and non‑city dwellers (no interaction contrast). Formula: H0: (0.5)*μ_NC,MW + (-0.5)*μ_C,MW + (-1)*μ_NC,NE + (1)*μ_C,NE + (0.5)*μ_NC,W + (-0.5)*μ_C,W = 0.
 
 ## Problem 19 (3 pt)
 
