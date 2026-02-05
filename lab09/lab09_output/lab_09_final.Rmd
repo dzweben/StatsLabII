@@ -1,6 +1,6 @@
 ---
 title: "Lab 9"
-author: "Joshua Klugman"
+author: "Danny Zweben"
 output:
   html_document:
     df_print: paged
@@ -52,36 +52,6 @@ head(ws)
 # Problem 3 (1 pt)
 
 Copy and paste your Excel table of marginal and cell means from the prior lab. If you made mistakes in that lab assignment, correct the table and paste it.
-
-```{r}
-ws$sized_f <- factor(ws$sized, levels = c(0, 1), labels = c("Non-City", "City"))
-ws$regions_f <- factor(ws$regions, levels = c(1, 2, 3, 4), labels = c("Midwest", "Northeast", "South", "West"))
-ws$id <- rownames(ws)
-ws_anova <- aov_car(ws ~ sized_f * regions_f + Error(id), data = ws)
-
-cell <- as.data.frame(emmeans(ws_anova, ~ regions_f * sized_f)) |>
-  select(regions_f, sized_f, emmean) |>
-  pivot_wider(names_from = sized_f, values_from = emmean)
-
-marg_region <- as.data.frame(emmeans(ws_anova, ~ regions_f)) |>
-  select(regions_f, emmean)
-
-marg_sized <- as.data.frame(emmeans(ws_anova, ~ sized_f)) |>
-  select(sized_f, emmean)
-
-cell <- left_join(cell, marg_region, by = "regions_f")
-colnames(cell)[ncol(cell)] <- "Row_Mean"
-
-bottom <- tibble(
-  regions_f = "Column Mean",
-  `Non-City` = marg_sized$emmean[marg_sized$sized_f == "Non-City"],
-  City = marg_sized$emmean[marg_sized$sized_f == "City"],
-  Row_Mean = mean(ws$ws)
-)
-
-cell2 <- bind_rows(cell, bottom)
-cell2
-```
 
 # Problem 4 (3 pts)
 
