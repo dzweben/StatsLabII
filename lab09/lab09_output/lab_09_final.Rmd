@@ -90,7 +90,7 @@ ws_anova$Anova
 
 Write a null hypothesis testing the main effect of the South-West difference.
 
-H0: μ_South − μ_West = 0 (marginal means).
+H0: 1*μ_South + (-1)*μ_West = 0 (marginal means).
 
 # Problem 7 (1 pt)
 
@@ -118,7 +118,7 @@ scheffe_main_region_t
 
 Write the null hypothesis for the simple effect of city status for people living in the Northeast.
 
-H0: μ_Northeast,City − μ_Northeast,Non‑City = 0.
+H0: 1*μ_Northeast,City + (-1)*μ_Northeast,Non‑City = 0.
 
 # Problem 10 (1 pts)
 
@@ -167,7 +167,7 @@ Using the Bonferroni-adjusted threshold (α = .05/4), the city vs non-city contr
 
 Write a null hypothesis for the simple effect of Midwest versus Northeast, among city dwellers.
 
-H0: μ_Midwest,City − μ_Northeast,City = 0.
+H0: 1*μ_Midwest,City + (-1)*μ_Northeast,City = 0.
 
 # Problem 15 (1 pt)
 
@@ -203,9 +203,9 @@ Write three null hypotheses:
 * the simple effect of Northeast vs Midwest and West, among non-city dwellers.
 * the interaction contrast comparing the above two simple effects
 
-- City dwellers, NE vs MW & W: H0: μ_C,NE − (μ_C,MW + μ_C,W)/2 = 0
-- Non-city dwellers, NE vs MW & W: H0: μ_NC,NE − (μ_NC,MW + μ_NC,W)/2 = 0
-- Interaction contrast: H0: [μ_C,NE − (μ_C,MW + μ_C,W)/2] − [μ_NC,NE − (μ_NC,MW + μ_NC,W)/2] = 0
+- City dwellers, NE vs MW & W: H0: 1*μ_C,NE + (-0.5)*μ_C,MW + (-0.5)*μ_C,W + 0*μ_C,S + 0*μ_NC,NE + 0*μ_NC,MW + 0*μ_NC,W + 0*μ_NC,S = 0
+- Non-city dwellers, NE vs MW & W: H0: 1*μ_NC,NE + (-0.5)*μ_NC,MW + (-0.5)*μ_NC,W + 0*μ_NC,S + 0*μ_C,NE + 0*μ_C,MW + 0*μ_C,W + 0*μ_C,S = 0
+- Interaction contrast: H0: 1*μ_C,NE + (-0.5)*μ_C,MW + (-0.5)*μ_C,W + (-1)*μ_NC,NE + 0.5*μ_NC,MW + 0.5*μ_NC,W + 0*μ_C,S + 0*μ_NC,S = 0
 
 # Problem 19 (3 pt)
 
