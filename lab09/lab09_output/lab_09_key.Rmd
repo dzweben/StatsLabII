@@ -81,6 +81,14 @@ head(ws)
 
 Copy and paste your Excel table of marginal and cell means from the prior lab. If you made mistakes in that lab assignment, correct the table and paste it.
 
+Syntax:
+
+```text
+Excel table pasted below.
+```
+
+Output:
+
 ```{r p3_table, echo=FALSE, fig.cap="Cell and marginal means"}
 knitr::include_graphics(find_file_up("q3_cell_marginal.png"))
 ```
@@ -155,7 +163,19 @@ ws_anova$Anova
 
 Write a null hypothesis testing the main effect of the South-West difference.
 
-Null: there is no difference between the South and West marginal means. Formula: H0: (-1)*μ_S + (1)*μ_W = 0.
+Syntax:
+
+```text
+Null: there is no difference between the South and West marginal means.
+Formula: H0: (-1)*μ_S + (1)*μ_W = 0.
+```
+
+Output:
+
+```text
+Null: there is no difference between the South and West marginal means.
+Formula: H0: (-1)*μ_S + (1)*μ_W = 0.
+```
 
 ## Problem 7 (1 pt)
 
@@ -205,7 +225,19 @@ scheffe_main_region_t
 
 Write the null hypothesis for the simple effect of city status for people living in the Northeast.
 
-Null: within the Northeast, city and non‑city population means are equal. Formula: H0: (-1)*μ_C,NE + (1)*μ_NC,NE = 0.
+Syntax:
+
+```text
+Null: within the Northeast, city and non‑city population means are equal.
+Formula: H0: (-1)*μ_C,NE + (1)*μ_NC,NE = 0.
+```
+
+Output:
+
+```text
+Null: within the Northeast, city and non‑city population means are equal.
+Formula: H0: (-1)*μ_C,NE + (1)*μ_NC,NE = 0.
+```
 
 ## Problem 10 (1 pt)
 
@@ -275,6 +307,15 @@ sc_city
 
 Write Up the results of the pairwise contrasts of city resident status, using the Bonferroni-adjusted threshold for significance (that is, accounting for the fact you did four comparisons–city vs. non-city in four regions). Your interpretation should report direction of the associations (that is which group has higher vocabulary scores), the effect size, and the p value (make clear if you are using the Bonferroni-adjusted p value or the unadjusted p value).
 
+Syntax:
+
+```{r p13_syntax, eval=FALSE}
+sc_city$bonf_p <- p.adjust(sc_city$p.value, method = "bonferroni")
+sc_city
+```
+
+Output:
+
 ```{r p13_output, echo=FALSE}
 sc_city$bonf_p <- p.adjust(sc_city$p.value, method = "bonferroni")
 sc_city
@@ -286,7 +327,19 @@ APA-style write-up (Bonferroni-adjusted): In the Midwest, city dwellers scored h
 
 Write a null hypothesis for the simple effect of Midwest versus Northeast, among city dwellers.
 
-Null: among city dwellers, the Midwest and Northeast population means are equal. Formula: H0: (-1)*μ_C,MW + (1)*μ_C,NE = 0.
+Syntax:
+
+```text
+Null: among city dwellers, the Midwest and Northeast population means are equal.
+Formula: H0: (-1)*μ_C,MW + (1)*μ_C,NE = 0.
+```
+
+Output:
+
+```text
+Null: among city dwellers, the Midwest and Northeast population means are equal.
+Formula: H0: (-1)*μ_C,MW + (1)*μ_C,NE = 0.
+```
 
 ## Problem 15 (1 pt)
 
@@ -326,6 +379,16 @@ crit_t_region_simple
 
 Identify the contrasts that survive the Tukey HSD+Bonferroni adjustment.
 
+Syntax:
+
+```{r p17_syntax, eval=FALSE}
+sc_region <- as.data.frame(pairs(em_cell, simple = "regions_f", adjust = "none"))
+sc_region$survive <- abs(sc_region$t.ratio) >= crit_t_region_simple
+sc_region[sc_region$survive == TRUE, c("contrast", "sized_f", "t.ratio", "p.value")]
+```
+
+Output:
+
 ```{r p17_output, echo=FALSE}
 sc_region <- as.data.frame(pairs(em_cell, simple = "regions_f", adjust = "none"))
 sc_region$survive <- abs(sc_region$t.ratio) >= crit_t_region_simple
@@ -340,13 +403,55 @@ Write three null hypotheses:
 * the simple effect of Northeast vs Midwest and West, among non-city dwellers.
 * the interaction contrast comparing the above two simple effects
 
-- City dwellers, NE vs MW & W: Null: among city dwellers, the Northeast mean equals the average of Midwest and West (no Northeast advantage). Formula: H0: (-0.5)*μ_C,MW + (1)*μ_C,NE + (-0.5)*μ_C,W = 0.
-- Non-city dwellers, NE vs MW & W: Null: among non‑city dwellers, the Northeast mean equals the average of Midwest and West (no Northeast advantage). Formula: H0: (-0.5)*μ_NC,MW + (1)*μ_NC,NE + (-0.5)*μ_NC,W = 0.
-- Interaction contrast: Null: the Northeast vs (Midwest & West) contrast is the same for city and non‑city dwellers (no interaction contrast). Formula: H0: (0.5)*μ_NC,MW + (-0.5)*μ_C,MW + (-1)*μ_NC,NE + (1)*μ_C,NE + (0.5)*μ_NC,W + (-0.5)*μ_C,W = 0.
+Syntax:
+
+```text
+City dwellers, NE vs MW & W:
+Null: among city dwellers, the Northeast mean equals the average of Midwest and West (no Northeast advantage).
+Formula: H0: (-0.5)*μ_C,MW + (1)*μ_C,NE + (-0.5)*μ_C,W = 0.
+
+Non-city dwellers, NE vs MW & W:
+Null: among non‑city dwellers, the Northeast mean equals the average of Midwest and West (no Northeast advantage).
+Formula: H0: (-0.5)*μ_NC,MW + (1)*μ_NC,NE + (-0.5)*μ_NC,W = 0.
+
+Interaction contrast:
+Null: the Northeast vs (Midwest & West) contrast is the same for city and non‑city dwellers (no interaction contrast).
+Formula: H0: (0.5)*μ_NC,MW + (-0.5)*μ_C,MW + (-1)*μ_NC,NE + (1)*μ_C,NE + (0.5)*μ_NC,W + (-0.5)*μ_C,W = 0.
+```
+
+Output:
+
+```text
+City dwellers, NE vs MW & W:
+Null: among city dwellers, the Northeast mean equals the average of Midwest and West (no Northeast advantage).
+Formula: H0: (-0.5)*μ_C,MW + (1)*μ_C,NE + (-0.5)*μ_C,W = 0.
+
+Non-city dwellers, NE vs MW & W:
+Null: among non‑city dwellers, the Northeast mean equals the average of Midwest and West (no Northeast advantage).
+Formula: H0: (-0.5)*μ_NC,MW + (1)*μ_NC,NE + (-0.5)*μ_NC,W = 0.
+
+Interaction contrast:
+Null: the Northeast vs (Midwest & West) contrast is the same for city and non‑city dwellers (no interaction contrast).
+Formula: H0: (0.5)*μ_NC,MW + (-0.5)*μ_C,MW + (-1)*μ_NC,NE + (1)*μ_C,NE + (0.5)*μ_NC,W + (-0.5)*μ_C,W = 0.
+```
 
 ## Problem 19 (3 pt)
 
 Create contrast vectors for a complex contrast of Northeast vs Midwest and West among city dwellers and non-city dwellers. Your vectors should have eight values in them, listing the contrast coefficients for the cells, in the order they are listed in the cell `emmGrid` object.
+
+Syntax:
+
+```{r p19_syntax, eval=FALSE}
+contrast_city <- c(0, -0.5, 0, 1, 0, 0, 0, -0.5)
+contrast_noncity <- c(-0.5, 0, 1, 0, 0, 0, -0.5, 0)
+contrast_interaction <- contrast_city - contrast_noncity
+
+contrast_city
+contrast_noncity
+contrast_interaction
+```
+
+Output:
 
 ```{r p19_output, echo=FALSE}
 contrast_city <- c(0, -0.5, 0, 1, 0, 0, 0, -0.5)
@@ -362,6 +467,19 @@ contrast_interaction
 
 Assemble the contrast vectors in a list.
 
+Syntax:
+
+```{r p20_syntax, eval=FALSE}
+contrast_list <- list(
+  city_NE_vs_MW_W = contrast_city,
+  noncity_NE_vs_MW_W = contrast_noncity,
+  interaction_NE_vs_MW_W = contrast_interaction
+)
+contrast_list
+```
+
+Output:
+
 ```{r p20_output, echo=FALSE}
 contrast_list <- list(
   city_NE_vs_MW_W = contrast_city,
@@ -375,6 +493,15 @@ contrast_list
 
 Have R calculate these contrasts using the cell `emmGRID` object. Do not apply any adjustments--yet.
 
+Syntax:
+
+```{r p21_syntax, eval=FALSE}
+complex_contrasts <- contrast(em_cell, contrast_list, adjust = "none")
+complex_contrasts
+```
+
+Output:
+
 ```{r p21_output, echo=FALSE}
 complex_contrasts <- contrast(em_cell, contrast_list, adjust = "none")
 complex_contrasts
@@ -383,6 +510,18 @@ complex_contrasts
 ## Problem 22 (2 pts)
 
 Calculate the Scheffe- and Bonferroni-adjusted critical value for a a complex simple contrast of region by city status. Take the square root to get a critical value comparable to a t-statistic.
+
+Syntax:
+
+```{r p22_syntax, eval=FALSE}
+scheffe_simple_t <- sqrt((A - 1) * qf(1 - alpha, A - 1, df_error))
+bonf_simple_t <- qtukey(1 - alpha/2, 2, df_error) / sqrt(2)
+
+scheffe_simple_t
+bonf_simple_t
+```
+
+Output:
 
 ```{r p22_output, echo=FALSE}
 scheffe_simple_t <- sqrt((A - 1) * qf(1 - alpha, A - 1, df_error))
@@ -396,6 +535,15 @@ bonf_simple_t
 
 Calculate the Scheffe-adjusted critical value for an interaction contrast. Take the square root to get a critical value comparable to a t-statistic.
 
+Syntax:
+
+```{r p23_syntax, eval=FALSE}
+scheffe_interaction_t <- sqrt((A - 1) * (2 - 1) * qf(1 - alpha, (A - 1) * (2 - 1), df_error))
+scheffe_interaction_t
+```
+
+Output:
+
 ```{r p23_output, echo=FALSE}
 scheffe_interaction_t <- sqrt((A - 1) * (2 - 1) * qf(1 - alpha, (A - 1) * (2 - 1), df_error))
 scheffe_interaction_t
@@ -404,6 +552,16 @@ scheffe_interaction_t
 ## Problem 24 (3 pt)
 
 Calculate Cohen's *d* for the three contrasts.
+
+Syntax:
+
+```{r p24_syntax, eval=FALSE}
+cc <- as.data.frame(complex_contrasts)
+cc$d <- cc$estimate / sd_pooled
+cc
+```
+
+Output:
 
 ```{r p24_output, echo=FALSE}
 cc <- as.data.frame(complex_contrasts)
