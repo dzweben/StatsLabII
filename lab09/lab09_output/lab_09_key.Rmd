@@ -280,7 +280,7 @@ sc_city$bonf_p <- p.adjust(sc_city$p.value, method = "bonferroni")
 sc_city
 ```
 
-APA-style write-up (Bonferroni-adjusted): In the Midwest, city dwellers scored higher than non-city dwellers, t(312) = 2.96, p_bonf = .013, d = 0.66. In the Northeast, non-city dwellers scored higher than city dwellers, t(312) = 7.23, p_bonf < .001, d = 1.62. The South and West comparisons were not significant (both p_bonf = 1.00).
+APA-style write-up (Bonferroni-adjusted): In the Midwest, city dwellers scored higher than non-city dwellers, t(312) = 2.96, p_bonf = .013, d = 0.66. In the Northeast, non-city dwellers scored higher than city dwellers, t(312) = 7.23, p_bonf < .001, d = 1.62. In the South, the city vs non-city difference was not significant, t(312) = 0.36, p_bonf = 1.00, d = 0.08 (city slightly higher). In the West, the city vs non-city difference was not significant, t(312) = 1.07, p_bonf = 1.00, d = 0.24 (non-city slightly higher).
 
 ## Problem 14 (1 pt)
 
