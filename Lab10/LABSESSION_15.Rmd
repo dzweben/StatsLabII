@@ -1,0 +1,166 @@
+---
+title: "Lab Session 15"
+author: "Joshua Klugman"
+output: 
+  word_document:
+    highlight: kate
+    reference_docx: style_template2.docx
+    fig_caption: no
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Two-Way ANOVA
+
+*We have a dataset of GPAs for people across four types of majors – arts and humanities, sciences, business, and education. We also have information about whether or not each person is an athlete. The goal is to determine the effect of major and athlete status on GPA.*
+
+## 1. Set working directory, load packages, read in data
+
+```{r, eval=F}
+# set working directory
+# (use pull down menus)
+
+# packages
+library(tidyverse)
+library(haven)
+library(emmeans)
+library(afex)
+library(pastecs)
+library(car)
+source("https://osf.io/download/zvtph/")
+```
+
+## 2. Load data
+
+```{r, eval=F}
+df<-read_sav("lab 15 gpa by athlete major.sav")
+```
+
+## 3. Examine variable attributes
+
+*Since we’re working with an SPSS dataset, we can use `attr()` to get the labels that correspond to the numeric values for Athlete and Major. Use these labels to create a new factor variable for both Athlete and Major. Finally, check your variable construction with a table().*
+
+```{r, eval=F}
+attr(DATAFRAME$NUMERIC.VARIABLE, “labels”)
+
+DATAFRAME$NEW.FACTOR.VAR <- factor(DATAFRAME$NUMERIC.VARIABLE, levels = c(#,#), labels = c(“LABEL 1”, “LABEL 2”, ...))
+
+table(DATAFRAME$NUMERIC.VARIABLE, DATAFRAME$NEW.FACTOR.VAR, exclude = NULL)
+```
+
+## 4. Create a "superfactor" based on athlete status and major.
+
+*This will help us identify athlete status and major within one variable. We can construct it using a dplyr pipe (using |> or %>% to separate pipe statements.*
+
+```{r, eval=F}
+DATAFRAME <- group_by(DATAFRAME, ATHLETE FACTOR VAR, MAJOR FACTOR VAR)
+DATAFRAME<-mutate(DATAFRAME, superfactor = cur_group_id())
+```
+
+## 5. Examine how this superfactor works
+
+*We’ve created a new grouping variable that creates a new set of group values based on two other grouping variables. In this case, we have two levels to the athlete factor and four levels to the major factor so our superfactor variable will have eight levels (2 x 4). Let’s check the superfactor variable construction for both grouping variables using table().* 
+
+```{r,eval=F}
+table(DATAFRAME$ORIGINALSUPERFACTOR, DATAFRAME$ATHLETEFACTOR, exclude = NULL)
+
+table(DATAFRAME$ORIGINALSUPERFACTOR, DATAFRAME$MAJORFACTOR, exclude = NULL)
+```
+
+(note there is only one "superfactor", but you will create another one so we are referring to it as `ORIGINALSUPERFACTOR` to distinguish it from the one you will create in the next problem)
+
+## 6. Create new factor variable for superfactor and assign levels
+
+*The numeric values in the superfactor variable aren’t very helpful, so let’s create a new superfactor factor variable with clearer labels. Make sure to check the new variable construction with another `table()`.* 
+
+```{r, eval=F}
+DATAFRAME$NEWSUPERFACTOR<- factor(DATAFRAME$OLDSUPERFACTOR, levels = c(1:MAXVALUE),
+                               labels = c("LABEL1", "LABEL2", ...))
+
+table(DATAFRAME$ORIGINALSUPERFACTOR, DATAFRAME$NEWSUPERFACTOR, exclude = NULL)
+
+```
+
+## 7. Make some plots
+
+In order to look at group differences, we need to check our normality and homogeneity of variances assumptions in order to run an ANOVA. Let’s start by making a histogram and boxplot to highlight GPA differences for athletes vs. non-athletes and across majors. 
+
+```{r, eval=F}
+ggplot(data = DATAFRAME, aes(x = GPA)) +
+  geom_histogram(binwidth = 1) +
+  facet_grid(MAJORFACTOR ~ ATHLETEFACTOR) +
+  theme_minimal()
+
+ggplot(data = DATAFRAME, aes(x = GPA)) +
+  geom_boxplot() +
+  facet_grid(MAJORFACTOR ~ ATHLETEFACTOR) +
+  theme_minimal()
+
+```
+
+
+## 8. Get descriptive statistics
+
+*Using `tapply()`, let’s get descriptive statistics on our GPA variable using new superfactor factor variable we created.*
+
+```{r, eval=F}
+tapply(DATAFRAME$GPA, DATAFRAME$NEWSUPERFACTOR, stat.desc, norm = TRUE)
+```
+
+## 9. Identify outliers
+
+*Using the `outpro` function within `tapply()`, check for outliers. If there are outliers in any group, find out which raw GPA values they correspond to.*
+
+```{r, eval=F}
+o <- tapply(DATAFRAME$GPA, DATAFRAME$NEWSUPERFACTOR, outpro)
+o 
+# do this for each group with outliers
+DATAFRAME$GPA[DATAFRAME$NEWSUPERFACTOR=="LABEL"][o[["LABEL"]]$out.id]
+```
+
+## 10. Levene's test
+
+*Test the equal variances assumption with a Levene’s test.*
+
+
+
+```{r, eval=F}
+car::leveneTest(GPA ~ NEWSUPERFACTOR, data = DATAFRAME, center = mean)
+```
+
+## 11. Write Up Diagnostics in 3 sentences maximum
+
+## 12. Create an ID variable to be used in the factorial ANOVA
+
+```{r, eval=F}
+DATAFRAME$IDVAR<-rownames(DATAFRAME)
+```
+
+## 13. Run factorial ANOVA
+
+```{r, eval=F}
+MODELOBJECT <- aov_car(GPA ~ ATHLETEFACTOR * MAJORFACTOR + Error(IDVAR), data = DATAFRAME)
+summary(MODELOBJECT)
+MODELOBJECT$Anova
+```
+
+## 14. Produce cell and marginal means.
+
+```{r, eval=F}
+em1.cell <- emmeans(MODELOBJECT, ~ ATHLETEFACTOR * MAJORFACTOR)
+em1.cell
+
+em1.athlete.margins <- emmeans(MODELOBJECT, ~ ATHLETEFACTOR)
+em1.athlete.margins
+
+em1.major.margins <- emmeans(MODELOBJECT, ~ MAJORFACTOR)
+em1.major.margins
+
+```
+
+
+# 15. Is it safe to interpret the main effects of athlete status and major?
+
+*In other words, does athlete status have a consistent effect across the regions such that the rank order of majors is the same for athletes and non-athletes?*

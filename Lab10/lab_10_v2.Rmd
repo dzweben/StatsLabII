@@ -1,0 +1,209 @@
+---
+title: "Lab 11"
+author: "Joshua Klugman"
+output: 
+  word_document:
+    highlight: kate
+    reference_docx: style_template2.docx
+    fig_caption: no
+---
+
+You are analyzing data from an experiment where subjects were given a random mix of anagrams at four levels of difficulty, represented by the number of letters in the anagram.  The dependent variable is the number of puzzles solved by each participant.
+
+* Integrate your answers in this Word document .  
+* For any problem asking you to carry out an operation in R, copy and paste your syntax and any R output below the respective question.
+* For questions that ask you to do manual calculations, you should show your work. Using R for manual calculations is allowed and encouraged (show your R syntax and output).
+* For each lab assignment, you should maintain an organized organized syntax file ("script")
+  + With comments prefaced by `#` that explain what you are doing
+  + missteps/mistakes are deleted
+  + in case you lose your work, you can run your script and reproduce your analyses.
+  + Some labs may require you to build on analyses/data cleaning you did in a prior lab and saving scripts easily allow you to do that
+* You need to upload this document to Canvas by the deadline *and check Canvas to make sure your upload took*
+
+
+![Data table](data_b.png)
+
+# Problem 1 (0 pts)
+
+Download the `baguley.txt` file from Canvas.  This contains the code to create Cousineau-Morey confidence intervals.  In your R session, set your working directory to wherever you downloaded the file.  
+
+# Problem 2 (0 pts)
+
+Load these packages into memory: `afex`, `pastecs`, `tidyverse`.  Also load the baguley.txt file into memory using the `source` command.  
+
+# Problem 3 (1 pt)
+
+Read the data into R as a wide dataframe.  Please note that variable names in R cannot start with a number, they have to start with an alphabetical character.  Also note that in order to get the repeated-measures ANOVA to work in R you will also need to enter the ID variable.  **Print the data frame.**
+
+
+# Problem 4 (2 pts) 
+
+Create a new data frame that is the "long" version of this one.  **Print the long data frame to ensure you did this correctly.**  
+
+Syntax:
+
+```{r, eval=F}
+LONGDATAFRAME<-pivot_longer(WIDEDATAFRAME,cols=c("VARNAME1","VARNAME2",...,"VARNAME3"),
+                            names_to="CONDITIONVARIABLE",
+                            values_to="VALUEVARIABLE")
+LONGDATAFRAME
+```
+
+
+# Problem 5 (1 pt)
+
+Overwrite the condition variable to be a factor variable.
+
+Syntax:
+
+```{r,eval=F}
+LONGDATAFRAME$CONDITIONVARIABLE<-factor(LONGDATAFRAME$CONDITIONVARIABLE)
+```
+
+# Problem 6 (6 pts)
+
+In the long dataframe, create a **new** version of the condition variable that is a numerical variable.  You can use either `ifelse` or `substr` to do this.  Produce a two-way table (with `exclude` set to `NULL`) showing the version was generated correctly.  You may have to coerce the resulting variable to be numeric (`as.numeric`).  Use `is.numeric` to make the generated variable is numeric.   
+
+# Problem 7 (2 pts)
+
+Use either the wide or long dataframes to get means, standard deviations, and the Shapiro-Wilk test for each level.  If you use the wide dataframe, this is simply a matter of using `pastecs::stat.desc(,norm=T)` to get summary statistics for all variables in the data.  If you use the long data frame, use `tapply` and `pastecs::stat.desc` to get summary statistics for each level.
+
+Syntax if using wide data:
+
+```{r, eval=F}
+pastecs::stat.desc(WIDEDATAFRAME,norm=T)
+```
+
+Syntax if using long data (it should not  matter if your condition variable is a factor variable or numeric variable:
+
+```{r,eval=F}
+tapply(LONGDATAFRAME$VALUESVARIABLE,LONGDATAFRAME$CONDITIONVARIABLE,pastecs::stat.desc,norm=T)
+```
+
+# Problem 8  (1 pt)
+
+Have R carry out the within-subject ANOVA.
+
+Syntax:
+
+```{r,eval=F}
+MODELOBJECT<-aov_car(VALUEVARIABLE~CONDITIONFACTORVARIABLE+Error(IDVARIABLE/CONDITIONVARIABLE),data=LONGDATAFRAME)
+summary(MODELOBJECT)
+```
+
+# Problem 9 (5 pts)
+
+Based on the output for the last two problems, how well does this conform to the assumptions of normality and sphericity?
+
+# Problem 10 (1 pt)
+
+Create a subsetted version of the wide dataframe that just contains the four condition variables (no ID variable!)
+
+Syntax:
+
+```{r,eval=F}
+SUBSETTEDDATAFRAME<-subset(WIDEDATAFRAME,select=c(VARNAME1,VARNAME2,...,VARNAMELAST))
+```
+
+# Problem 11 (2 pts)
+
+Use the `cm.ci` command from `baguley.txt` to crate the Cousineau-Morey confidence intervals (based on the subsetted wide dataframe), and save them to a new condition-level dataframe.  Print the dataframe.
+
+Syntax:
+
+```{r,eval=F}
+CMDATAFRAME<-as.data.frame(cm.ci(data.frame=SUBSETTEDDATAFRAME,
+                                  conf.level=.95,
+                                  difference=FALSE))
+```
+
+# Problem 12 (1 pt)
+Create a condition variable in the Cousineau-Morey dataframe you just created.  This should have the exact same name as the condition factor variable you created.
+
+Syntax:
+
+```{r,eval=F}
+CMDATAFRAME$CONDITIONFACTORVAR<-rownames(CMDATAFRAME)
+```
+
+# Problem 13 (1 pt)
+
+Create yet another condition-level dataframe with the mean values of puzzles solved.  You should use both the **numeric** and **factor** version of the condition variable
+
+Syntax:
+
+```{r, eval=F}
+LONGDATAFRAME<-group_by(LONGDATAFRAME,CONDITIONNUMERICVAR,CONDITIONFACTORVAR)
+MEANDATAFRAME<-summarize(LONGDATAFRAME,MEANVARIABLE=mean(VALUESVARIABLE,na.rm=TRUE))
+MEANDATAFRAME
+```
+
+
+# Problem 14 (5 pts) 
+
+Use `merge` to merge the Cousineau-Morey dataframe and the mean dataframe.  Print the resulting dataframe.  **Be sure that the merging took place without error--the means should be equidistant between the lower and upper bounds.**
+
+Syntax:
+
+```{r,eval=F}
+DATAFRAMEFORGRAFIN<-merge(MEANDATAFRAME,CMDATAFRAME,by="CONDITIONFACTORVAR")
+DATAFRAMEFORGRAFIN
+```
+
+# Problem 15 (5 pts)
+
+Graph the means and their error bars.  Use a professional-looking line graph, with a title and labels for the x- and y-axes. Add a note making clear what the error bars are.
+
+# Problem 16 (2 pts)
+
+Calculate the new numerator and denominator degrees of freedom by multiplying the ones listed in the ANOVA output by the Greenhouse-Geiser epsilon.
+
+# Problem 17 (5 pts)
+
+Write a brief summary of the omnibus F-test (one sentence maximum).
+
+# Problem 18 (1 pt)
+
+Have `emmeans` produce an `emmgrid` object with the condition means.
+
+Syntax:
+
+```{r,eval=F}
+EMMGRIDOBJECT<-emmeans(MODELOBJECT,~CONDITIONFACTORVARIABLE)
+EMMGRIDOBJECT
+```
+
+# Problem 19 (3 pts) 
+
+You are going to carry out a complex contrast to do a linear trend analysis, to see if there is a linear relationship between the "doses" of letters and puzzles solved.  
+
+Assemble a vector with these contrast coefficients: -2.5,-1.5,1.5, and 2.5.  Put the vector in a list, and carry out the contrast.
+
+By the way, if you are curious why these contrast coefficients, the formula for contrast coefficients for a linear trend is:
+
+$X-\overline{X}$
+
+where $X$ is the dosage level (here, 4,5,8,9 letters), and $\overline{X}$ is the mean dosage level (here 6.5 letters). 
+
+Syntax:
+
+```{r, eval=F}
+VECTORNAME<-c(-2.5,-1.5,1.5,2.5)
+LISTNAME<-list(VECTORNAME)
+contrast(EMMGRIDOBJECT,LISTNAME)
+```
+
+# Problem 20 (1 pt)
+
+Pretend the linear trend analysis was decided upon after looking at the data (in all likelihood, such an analysis would have been decided upon when the design was being planned, not afterwards).  Calculate the Scheffe-adjusted critical value for the contrast.
+
+Syntax (to get the t-critical value; note you have to customize the `a-1`, `A-1`, and `n-1` arguments!)
+
+```{r, eval=F}
+sqrt((a-1)*qf(1-ALPHA,(a-1),(n-1)))
+```
+
+# Problem 21 (5 pts)
+
+
+Write up the trend analyses assessing significance using the Scheffe adjustment. Be sure to indicate the direction of the effect (ie positive or negative, regardless if it is significant or not). Effect sizes are not necessary.
