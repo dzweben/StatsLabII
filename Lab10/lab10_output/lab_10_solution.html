@@ -1904,9 +1904,11 @@ epsilon.</p>
 n &lt;- 8
 num_df &lt;- a - 1
 den_df &lt;- (n - 1) * (a - 1)
-sum_model &lt;- summary(model)
-epsilon &lt;- sum_model[[&quot;pval.adjustments&quot;]][&quot;letters&quot;, &quot;GG eps&quot;]
-epsilon &lt;- as.numeric(epsilon)
+# GG epsilon from the ANOVA output table
+epsilon &lt;- 0.78082
+# To pull directly from the table (optional):
+# sum_model &lt;- summary(model)
+# epsilon &lt;- as.numeric(sum_model[[&quot;pval.adjustments&quot;]][&quot;letters&quot;, &quot;GG eps&quot;])
 num_df_adj &lt;- num_df * epsilon
 den_df_adj &lt;- den_df * epsilon
 num_df_adj</code></pre>

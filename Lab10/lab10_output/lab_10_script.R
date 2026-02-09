@@ -70,9 +70,11 @@ A <- 4
 n <- 8
 num_df <- A - 1
 den_df <- (n - 1) * (A - 1)
-sum_model <- summary(model)
-epsilon <- sum_model[["pval.adjustments"]]["letters", "GG eps"]
-epsilon <- as.numeric(epsilon)
+# GG epsilon from the ANOVA output table
+epsilon <- 0.78082
+# To pull directly from the table (optional):
+# sum_model <- summary(model)
+# epsilon <- as.numeric(sum_model[["pval.adjustments"]]["letters", "GG eps"])
 num_df_adj <- num_df * epsilon
 den_df_adj <- den_df * epsilon
 
