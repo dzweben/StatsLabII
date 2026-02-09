@@ -1902,10 +1902,11 @@ multiplying the ones listed in the ANOVA output by the Greenhouse-Geiser
 epsilon.</p>
 <pre class="r"><code>a &lt;- 4
 n &lt;- 8
-anov_tab &lt;- model$anova_table
 num_df &lt;- a - 1
 den_df &lt;- (n - 1) * (a - 1)
-epsilon &lt;- anov_tab$`num Df` / num_df
+sum_model &lt;- summary(model)
+epsilon &lt;- sum_model[[&quot;pval.adjustments&quot;]][&quot;letters&quot;, &quot;GG eps&quot;]
+epsilon &lt;- as.numeric(epsilon)
 num_df_adj &lt;- num_df * epsilon
 den_df_adj &lt;- den_df * epsilon
 num_df_adj</code></pre>

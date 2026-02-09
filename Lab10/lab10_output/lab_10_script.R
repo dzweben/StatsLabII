@@ -68,10 +68,11 @@ plot_obj <- ggplot(data = plot_df, aes(x = letters_num, y = mean_solved, group =
 # Problem 16: GG-adjusted df
 A <- 4
 n <- 8
-anov_tab <- model$anova_table
 num_df <- A - 1
 den_df <- (n - 1) * (A - 1)
-epsilon <- anov_tab$`num Df` / num_df
+sum_model <- summary(model)
+epsilon <- sum_model[["pval.adjustments"]]["letters", "GG eps"]
+epsilon <- as.numeric(epsilon)
 num_df_adj <- num_df * epsilon
 den_df_adj <- den_df * epsilon
 
