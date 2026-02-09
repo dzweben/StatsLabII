@@ -13,7 +13,7 @@ knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 
 # IMPORTANT: Set your working directory to the Lab10 folder before running.
 # Example:
-setwd("/Users/dannyzweben/Desktop/GradClass/Y1/S2/StatsII/StatsII-Labs/Lab10")
+# setwd("/Users/dannyzweben/Desktop/GradClass/Y1/S2/StatsII/StatsII-Labs/Lab10")
 
 library(tidyverse)
 library(afex)
