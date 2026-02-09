@@ -339,11 +339,7 @@ a <- 4
 n <- 8
 num_df <- a - 1
 den_df <- (n - 1) * (a - 1)
-# GG epsilon from the ANOVA output table
 epsilon <- 0.78082
-# To pull directly from the table (optional):
-# sum_model <- summary(model)
-# epsilon <- as.numeric(sum_model[[\"pval.adjustments\"]][\"letters\", \"GG eps\"])
 num_df_adj <- num_df * epsilon
 den_df_adj <- den_df * epsilon
 num_df_adj
@@ -357,15 +353,22 @@ a <- 4
 n <- 8
 num_df <- a - 1
 den_df <- (n - 1) * (a - 1)
-# GG epsilon from the ANOVA output table
 epsilon <- 0.78082
-# To pull directly from the table (optional):
-# sum_model <- summary(model)
-# epsilon <- as.numeric(sum_model[["pval.adjustments"]]["letters", "GG eps"])
 num_df_adj <- num_df * epsilon
 den_df_adj <- den_df * epsilon
 num_df_adj
 den_df_adj
+```
+
+Optional (pull epsilon directly from the ANOVA table):
+
+```{r p16_optional, eval=FALSE}
+# sum_model <- summary(model)
+# epsilon <- as.numeric(sum_model[["pval.adjustments"]]["letters", "GG eps"])
+# num_df_adj <- num_df * epsilon
+# den_df_adj <- den_df * epsilon
+# num_df_adj
+# den_df_adj
 ```
 
 # Problem 17 (5 pts)

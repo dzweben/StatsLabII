@@ -1,6 +1,6 @@
 ---
-title: "Lab 11"
-author: "Joshua Klugman"
+title: "Lab 10"
+author: "Danny Zweben"
 output:
   html_document:
     df_print: paged
@@ -11,9 +11,7 @@ output:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 
-# IMPORTANT: Set your working directory to the Lab10 folder before running.
-# Example:
-# setwd("/Users/dannyzweben/Desktop/GradClass/Y1/S2/StatsII/StatsII-Labs/Lab10")
+ setwd("/Users/dannyzweben/Desktop/GradClass/Y1/S2/StatsII/StatsII-Labs/Lab10")
 
 library(tidyverse)
 library(afex)
@@ -192,15 +190,22 @@ a <- 4
 n <- 8
 num_df <- a - 1
 den_df <- (n - 1) * (a - 1)
-# GG epsilon from the ANOVA output table
 epsilon <- 0.78082
-# To pull directly from the table (optional):
-# sum_model <- summary(model)
-# epsilon <- as.numeric(sum_model[["pval.adjustments"]]["letters", "GG eps"])
 num_df_adj <- num_df * epsilon
 den_df_adj <- den_df * epsilon
 num_df_adj
 den_df_adj
+```
+
+Optional (pull epsilon directly from the ANOVA table):
+
+```{r eval=FALSE}
+# sum_model <- summary(model)
+# epsilon <- as.numeric(sum_model[["pval.adjustments"]]["letters", "GG eps"])
+# num_df_adj <- num_df * epsilon
+# den_df_adj <- den_df * epsilon
+# num_df_adj
+# den_df_adj
 ```
 
 # Problem 17 (5 pts)

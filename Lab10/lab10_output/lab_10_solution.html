@@ -1904,17 +1904,20 @@ epsilon.</p>
 n &lt;- 8
 num_df &lt;- a - 1
 den_df &lt;- (n - 1) * (a - 1)
-# GG epsilon from the ANOVA output table
 epsilon &lt;- 0.78082
-# To pull directly from the table (optional):
-# sum_model &lt;- summary(model)
-# epsilon &lt;- as.numeric(sum_model[[&quot;pval.adjustments&quot;]][&quot;letters&quot;, &quot;GG eps&quot;])
 num_df_adj &lt;- num_df * epsilon
 den_df_adj &lt;- den_df * epsilon
 num_df_adj</code></pre>
 <pre><code>## [1] 2.34246</code></pre>
 <pre class="r"><code>den_df_adj</code></pre>
 <pre><code>## [1] 16.39722</code></pre>
+<p>Optional (pull epsilon directly from the ANOVA table):</p>
+<pre class="r"><code># sum_model &lt;- summary(model)
+# epsilon &lt;- as.numeric(sum_model[[&quot;pval.adjustments&quot;]][&quot;letters&quot;, &quot;GG eps&quot;])
+# num_df_adj &lt;- num_df * epsilon
+# den_df_adj &lt;- den_df * epsilon
+# num_df_adj
+# den_df_adj</code></pre>
 </div>
 <div id="problem-17-5-pts" class="section level1">
 <h1>Problem 17 (5 pts)</h1>
