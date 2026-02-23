@@ -1,0 +1,160 @@
+---
+title: "Lab 12"
+output: 
+  word_document:
+    fig_caption: no
+    highlight: kate
+    reference_docx: "style_template2.docx"
+---
+
+Researchers were interested in finding out if relaxation techniques can mitigate the stress college students feel over the course of a semester.  They tracked two groups of dental students over an academic year, taking measurements in September (low stress), November (high stress), April (high stress), June (high stress), and July (low stress).  One group was given relaxation therapy  (TREATMENT = 2) and the control group (TREATMENT = 1) was given no therapy at all.  
+The dependent variable is the rate of secretion of salivary secretory immunoglobulin A (s-IgA) that was measured in each month (unit of measurement: mg s-IgA/min).  Higher values mean stronger functioning of the immune system (and hence less stress).  The data is available on Canvas.
+
+```{r, include=F}
+library(haven)
+r<-read_sav(file="relax.sav")
+r$treatmentf<-factor(r$treatment,labels=c("Control","Relaxation Therapy"))
+r$treatment<-as.numeric(r$treatment)
+save(r, file="relax.rda")
+```
+
+
+* Integrate your answers in this Word document .  
+* For any problem asking you to carry out an operation in R, copy and paste your syntax and any R output below the respective question.
+* For questions that ask you to do manual calculations, you should show your work. Using R for manual calculations is allowed and encouraged (show your R syntax and output).
+* For each lab assignment, you should maintain an organized organized syntax file ("script")
+  + With comments prefaced by `#` that explain what you are doing
+  + missteps/mistakes are deleted
+  + in case you lose your work, you can run your script and reproduce your analyses.
+  + Some labs may require you to build on analyses/data cleaning you did in a prior lab and saving scripts easily allow you to do that
+* You need to upload this document to Canvas by the deadline *and check Canvas to make sure your upload took*
+
+
+## Problem 1 (0 pts)
+
+Load these packages into memory: `afex`, `emmeans`, `haven`, `tidyverse`, 
+
+## Problem 2 (0 pts)
+
+Set your working directory and load the `relax.rda` data file into memory, which contains the `r` dataframe.
+
+## Problem 3 (1 pt)
+
+Reshape the data frame to a "long" or person-period dataframe.
+
+Syntax:
+
+```{r, eval=F}
+LONGDATAFRAME<-pivot_longer(WIDEDATAFRAME,cols=c(MEASURE1,MEASURE2,...MEASURELAST),
+                            names_to="MEASURENAME",
+                            values_to="OUTCOME")
+```
+
+## Problem 4 (1 pt) 
+
+Do the omnibus split-plot ANOVA test.
+
+Syntax:
+
+```{r, eval=F}
+MODELOBJECT<-aov_car(OUTCOME~MONTHVARIABLE*TREATMENTVARIABLE+Error(IDVARIABLE/MONTHVARIABLE),data=LONGDATAFRAME)
+summary(MODELOBJECT)
+```
+
+(note the independent variables need to be either categorical or factor, it does not matter which)
+
+## Problem 5 (1 pt)
+
+Get an `emmeans` object for the month marginal means.  Print the `emmeans` object.
+
+Syntax:
+
+```{r, eval=F}
+EMOBJECT<-emmeans(MODELOBJECT,~MONTHVARIABLE)
+EMOBJECT
+```
+
+## Problem 6 (1 pt)
+
+Get an `emmeans` object for the condition marginal means.  Print the `emmeans` object.  The `EMOBJECT` should have a different name than the one you used before.
+
+## Problem 7 (1 pt)
+
+Get an `emmeans` object for the cell means.  Print the `emmeans` object.
+
+## problem 8 (1 pt)
+
+Save the cell `emmeans` object as a dataframe.
+
+Syntax:
+
+```{r, eval=F}
+CELL.DATAFRAME<-as.data.frame(CELL.EMMEANS.OBJECT)
+```
+
+## Problem 9 (1 pt)
+
+In Excel make a spreadsheet showing these cell and marginal means, with the rows corresponding to treatment and the columns corresponding to month.  Copy the spreadsheet here.  You round to thousandths.  Do not worry about polish.  This is just to help you understand what is going on with the data.
+
+## Problem 10 (1 pt)
+
+We have a problem: we want to graph this data (using the cell `emmeans`-object-turned-dataframe), but R is going to arrange the months alphabetically using unpolished month labels (april - july - june - nov - sept) rather than chronologically using polished labels (September - November - April - June - July).  In the cell-level dataframe, create a new month variable that is a factor version of the original month variable.   You will need to use the `levels` argument to specify the chronological order of the months, and the `labels` argument to give formal names to the months (e.g. "September" instead of "sept").
+
+## Problem 11 (1 pt)
+
+Produce a polished line graph showing the cell means.  Note that in practice you should also present Cousineau-Morey confidence intervals, but I will spare you that for this lab assignment.
+
+Syntax:
+
+```{r, eval=F}
+ggplot(data=CELL.DATAFRAME,aes(x=MONTHFACTORVARIABLE,y=emmean,color=TREATMENTFACTORVARIABLE,group=TREATMENTFACTORVARIABLE))+
+  geom_line()+
+  labs(ARGUMENTS)
+```
+
+## Problem 12 (1 pt)
+
+Re-do the omnibus test, but this time pretend this is a between-subject design, with each observation corresponding to a different individual.  First you will create a fake ID variable for each observation.  Identify the residual MS, take its square root and get the pooled SD (round to ten thousandths, four decimal places).
+
+Note that we are just doing this to help us calculate d~av~.  You should probably delete the model object to avoid confusion.  
+
+Syntax:
+
+```{r, eval=F}
+LONGDATAFRAME$FAKEIDVARIABLE<-seq(1,nrow(LONGDATAFRAME))
+MODELOBJECT2<-aov_car(OUTCOME~MONTHVARIABLE*TREATMENTVARIABLE+Error(FAKEIDVARIABLE),data=LONGDATAFRAME)
+summary(MODELOBJECT2)
+
+```
+
+
+## Contrasts
+
+For each contrast: (a) write the null hypothesis (1 pt); (b) ask R to perform the contrast, if applicable(1 pt); (c) show the calculations for the adjusted critical value for a post-hoc contrast (2 pts); (d) state if you reject or retain the null (1 pt); (e) Report  d~av~ (if applicable, 1 pt).
+
+Syntax for contrasts:
+
+```{r, eval=F}
+CONTRASTVECTOR<-c(COEFFICIENT1,COEFFICIENT2,...COEFFICIENTLAST)
+CONTRASTLIST<-list(CONTRASTVECTPR)
+contrast(EMOBJECT,CONTRASTLIST)
+```
+
+(you will need to figure out how to get the adjusted-critical value in R)
+
+## Problem 13 (6 pts)
+
+The difference between the low-stress months (September, July) and high-stress months (November, April, June) for everyone.
+
+## Problem 14 (6 pts)
+
+The difference between the low-stress months and high-stress months for subjects in the relaxation treatment.
+
+## Problem 15 (6 pts)
+
+The difference between the low-stress months and high-stress months for subjects in the control treatment.
+
+## problem 16 (6 pts)
+
+The relaxation-control difference in the low stress month/high stress month differential.
+
