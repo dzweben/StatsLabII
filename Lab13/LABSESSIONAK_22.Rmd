@@ -1,0 +1,325 @@
+---
+title: "Lab Session 22 ANSWER KEY"
+author: "Joshua Klugman"
+output: 
+  word_document:
+    highlight: kate
+    reference_docx: style_template_ak2.docx
+    fig_caption: no
+---
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+load(file="ecls.rda")
+summary(ecls$cogmat)
+ecls$cogmat<-ecls$cogmat- -1.020
+save(ecls,file="ecls_v2.rda")
+```
+
+# Bivariate Regression
+
+In this lab demonstration you will use data from the Early Childhood Longitudinal Study (ECLS-K), a data collection on a cohort of kindergarteners in 1998.  You will perform regress general knowledge scores (outcome) on a measure of cognitive materials (independent variable) that has already been constructed here.
+
+## 1. Set working directory and load packages
+
+```{r, eval=F}
+options(scipen = 100, digits = 5)
+library(tidyverse)
+library(psych)
+library(stargazer)
+library(apaTables)
+source("https://osf.io/download/9kq2d/")
+```
+
+### Answer
+
+```{r, eval=T}
+options(scipen = 100, digits = 5)
+
+library(tidyverse)
+library(psych)
+library(stargazer)
+library(apaTables)
+source("https://osf.io/download/9kq2d/")
+```
+
+## 2. Load data
+
+
+```{r, eval=F}
+load("ecls_v2.Rda")
+```
+
+### Answer
+
+```{r, eval=T}
+load("ecls_v2.Rda")
+```
+
+## 3. Produce variable names and labels
+
+```{r, eval=F}
+attributes(DATAFRAME)["variable.labels"]
+```
+
+### Answer
+
+```{r, eval=T}
+attributes(ecls)["variable.labels"]
+```
+
+
+## 4. z-standardize the outcome variable (general knowledge score)
+
+We can do this manually or using the scale() function (and its default arguments).
+
+```{r, eval=F}
+# manually
+ecls$NEWZVARIABLE <- (ecls$KNOWLEDGE - mean(ecls$KNOWLEDGE, na.rm = TRUE)) / sd(ecls$KNOWLEDGE, na.rm = TRUE)
+
+# with scale
+ecls$SECONDNEWZVARIABLE <- as.numeric(scale(ecls$KNOWLEDGE))
+```
+
+### Answer
+
+```{r, eval=T}
+# manually
+ecls$zknow1 <- (ecls$c2gtscor - mean(ecls$c2gtscor, na.rm = TRUE)) / sd(ecls$c2gtscor, na.rm = TRUE)
+
+# with scale
+ecls$zknow2 <- as.numeric(scale(ecls$c2gtscor))
+```
+
+## 5. Create z-standardized versions of our predictor variable
+
+```{r, eval=F}
+ecls$ZCOGNITIVEMATERIALS <- as.numeric(scale(ecls$COGNITIVEMATERIALS))
+```
+
+### Answer
+
+```{r}
+ecls$zcogmat <- as.numeric(scale(ecls$cogmat))
+```
+
+
+## 6. Get summary statistics 
+
+Use the `describe()` function from the psych package and provide a list of variables that you want to get summary statistics for.  Include the original general knowledge score, z-standardized general knowledge score, the original cognitive material score, and z-standardized cognitive material 
+
+```{r, eval=F}
+describe(ecls[c("VAR1", "VAR2", "VAR3")])
+```
+
+### Answer
+
+```{r, eval=T}
+describe(ecls[c("c2gtscor","zknow2", "cogmat","zcogmat")])
+```
+
+## 7. Produce a correlation matrix 
+
+Include the original general knowledge score, z-standardized general knowledge score, the original cognitive material score, and z-standardized cognitive material 
+
+```{r, eval=F}
+cor(ecls[c("VAR1","VAR2" ...)], use = "complete.obs")
+```
+
+### Answer
+
+```{r, eval=T}
+cor(ecls[c("c2gtscor","zknow2", "cogmat","zcogmat")], use = "complete.obs")
+```
+
+## 8. Save an APA-style correlation table
+
+Use the same list of variables from the previous step to only include variables of interest in your APA table.  If you don’t include the variable list, by default, all variables will be included. This will save out a separate .doc file in your working directory and print out the table in the R console window.
+
+```{r, eval=F}
+apa.cor.table(ecls[c("VAR1","VAR2",...)],
+filename = "table1_lab7_APA.doc", table.number = 1)
+```
+
+### Answer
+
+```{r, eval=T}
+apa.cor.table(ecls[c("c2gtscor","zknow2", "cogmat","zcogmat")],
+filename = "table1_lab7_APA.doc", table.number = 1)
+```
+
+![This is the correlation matrix produced by apa.cor.table](apatable.png)
+
+## 9. Subset the data frame 
+
+Only include the original general knowledge score, z-standardized general knowledge score, the original cognitive material score, and z-standardized cognitive material   
+
+```{r,eval=F}
+NEWDATAFRAME <- ecls |> select(VAR1, VAR2, VAR3)
+```
+
+### Answer
+
+```{r,eval=T}
+e <- ecls |> select(c2gtscor, zknow2, zcogmat, cogmat)
+```
+
+We need to get the variable names for our variables of interest, parental investment and math scores. Use the following syntax to get this information.
+
+## 10. Remove missing values from your subset data frame
+We can do this using either subset() or na.omit(). Try both to make sure you get the same sized data frame.
+
+```{r, eval=F}
+# use subset()
+DATAFRAMESUBSET <- subset(NEWDATAFRAME, !is.na(VAR1) & !is.na(VAR2) & !is.na(VAR3))
+# use na.omit()
+DATAFRAMESUBSET2 <- na.omit(NEWDATAFRAME)
+```
+
+### Answwer
+
+
+```{r, eval=T}
+# use subset()
+ess1 <- subset(e, !is.na(zknow2) & !is.na(zcogmat))
+# use na.omit()
+ess2 <- na.omit(e)
+```
+
+## 11. Create histograms showing the distribution of the unstandardized cognitive predictor and the general knowledge outcome
+
+```{r, eval=F}
+ggplot(DATAFRAMESUBSET, aes(x = VAR1, y = after_stat(count*100/sum(count)))) +
+geom_histogram(fill = "COLOR") +
+labs(x = "X AXIS LABEL",
+y = "Y AXIS LABEL",
+title = "DESCRIPTIVE TITLE") +
+theme_minimal()
+```
+
+### Answer
+
+
+```{r, eval=T}
+ggplot(ess2, aes(x = cogmat, y = after_stat(count*100/sum(count)))) +
+geom_histogram(fill = "grey") +
+labs(x = "Cognitive Investment ('points')",
+y = "Percent",
+title = "Distribution of Cognitive Investments Index") +
+theme_minimal()
+```
+
+
+```{r, eval=T}
+ggplot(ess2, aes(x = c2gtscor, y = after_stat(count*100/sum(count)))) + geom_histogram(fill = "grey") +
+labs(x = "General Knowledge (SD)",
+y = "Percent",
+title = "Distribution of General Knowledge test scores") +
+theme_minimal()
+```
+
+## 12. Run a bivariate regression of general knowledge on cognition 
+
+Use the `lm()` function to run a simple bivariate regression. Your dependent variable is placed before the ~ and all predictors are placed after.  Use the *unstandardized* variables
+
+Use `summary()` to check the model results.
+
+```{r, eval=F}
+MODELNAME1 <- lm(DV ~ IV, data = DATAFRAMESUBSET)
+summary(MODELNAME1)
+```
+
+### Answer
+
+```{r}
+m1 <- lm(c2gtscor ~ cogmat, data = ess2)
+summary(m1)
+```
+
+## 13. Write up a textbook interpretation of the intercept
+
+### Answer
+
+A child who has a score of "zero" on cognitive materials is predicted to have a general knowledge score of 44.795 pts.  
+
+## 14. Write up a textbook interpretation of the slope
+
+### Answer
+
+A unit increase in cognitive materials is associated with an increased predicted general knowledge score by 5.803 pts.  This is statistically significant, t(15457)=55.5, p<0.001.
+
+## 15. Give a textbook interpretation of R^2^
+
+### Answer
+
+We explain 16.6 percent of the variation in general knowledge scores using information on cognitive materials.  OR: Cognitive materials reduces our prediction error in general knowledge scores by 16.6 percent.  
+
+## 16. Run another bivariate regression using z-standardized variables.
+
+### Answer
+
+```{r}
+m2 <- lm(zknow2 ~ zcogmat, data = ess2)
+summary(m2)
+```
+
+## 17. Write up textbook interpretations of the intercept and slope  
+
+### Answer
+
+When someone has "average" cognitive materials" (z-score = 0), their general knowledge scores are predicted to be .03661 SD above the mean.
+
+For every SD increase in cognitive materials, predicted general knowledge scores will increase by .407 SD. This is statistically significant, t(15457)=55.5, p<0.001.
+
+## 18. Create a stargazer table to present regression results
+
+Make sure to put your variable names in the correct order in the covariate.labels argument.
+
+```{r, eval=F}
+
+# First pass
+stargazer(MODEL NAME,
+type = "text",
+title="TITLE TEXT"
+star.cutoffs = c(0.05, 0.01, 0.001))
+
+# Second Pass
+stargazer(MODEL1,MODEL2,
+type = "text",
+title="TITLE TEXT",
+covariate.labels = c("NAME 1", "NAME 2", "NAME3"),
+dep.var.labels = c("OUTCOME1","OUTCOME2"),
+star.cutoffs = c(0.05, 0.01, 0.001))
+```
+
+### Answer
+
+```{r, eval=T}
+stargazer(m1,m2,
+type = "text",
+title="Regression of General Knowledge Test Scores on Cognitive Materials",
+star.cutoffs = c(0.05, 0.01, 0.001))
+
+
+stargazer(m1,m2,
+type = "text",
+title="Regression of General Knowledge Test Scores on Cognitive Materials",
+covariate.labels = c("Cognitive Materials (pts)", "Cognitive Materials (SD)", "Intercept"),
+dep.var.labels = c("Knowledge (pts)","Knowledge (SD)"),
+star.cutoffs = c(0.05, 0.01, 0.001))
+```
+
+## 19. Write up the results of your regression in APA-style
+
+### Answer
+
+Cognitive materials is positively associated with general knowledge scores, B=5.80, $\beta$=0.41, t(15457)=55.5, p<0.001.  
+
+## 20. Save R Script.
+
+

@@ -1,0 +1,5 @@
+"pair","type","r","p"
+"Education-Reading","Pearson",0.150119340406973,0.293046666311393
+"Education-Reading","Winsorized_20pct",0.397587768664138,0.00506167899552912
+"Homicide-Execution","Pearson",0.094901535981909,0.507696778892648
+"Homicide-Execution","Winsorized_20pct",0.450989508912569,0.00138276122996883

@@ -1,0 +1,255 @@
+---
+title: "Lab 13 Solution"
+author: "Danny Zweben"
+output:
+  html_document:
+    df_print: paged
+    toc: true
+    toc_depth: 2
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+
+# Resolve files whether knitting from Lab13/ or Lab13/lab13_output/.
+find_file <- function(fname) {
+  candidates <- c(fname, file.path("..", fname))
+  hit <- candidates[file.exists(candidates)]
+  if (length(hit) == 0) stop(sprintf("%s not found. Set working directory to Lab13.", fname))
+  hit[1]
+}
+
+options(scipen = 100)
+options(digits = 3)
+
+library(ggplot2)
+library(pastecs)
+
+if (file.exists("Rallfun-v45.txt") || file.exists("../Rallfun-v45.txt")) {
+  source(find_file("Rallfun-v45.txt"))
+} else {
+  source("https://osf.io/download/98b7r/")
+}
+
+stdata_path <- find_file("stdata_v2.rda")
+load(stdata_path)
+
+`%||%` <- function(x, y) if (is.null(x)) y else x
+```
+
+Analyze the `stdata_v2.rda` datafile with the correlation techniques we discussed in class. This is 2005 data collected from the 50 states plus the District of Columbia.
+
+## Problem 1 (0 pts)
+
+Run this syntax to reduce rounding and minimize the use of scientific notation.
+
+```{r}
+options(scipen = 100)
+options(digits = 3)
+```
+
+## Problem 2 (0 pts)
+
+Install and load into memory `ggplot2` and `pastecs` (for its `stat.desc` function for normality tests).
+
+```{r}
+library(ggplot2)
+library(pastecs)
+```
+
+## Problem 3 (0 pts)
+
+Load Rand Wilcox’s script file into memory. We will use the `wincor` functions to get correlations and hypothesis tests.
+
+```{r}
+if (file.exists("Rallfun-v45.txt") || file.exists("../Rallfun-v45.txt")) {
+  source(find_file("Rallfun-v45.txt"))
+} else {
+  source("https://osf.io/download/98b7r/")
+}
+```
+
+## Problem 4 (0 pts)
+
+Set your working directory.
+
+```{r}
+getwd()
+```
+
+## Problem 5 (0 pts)
+
+Load the `stdata_v2.rda` data into memory (this contains the dataframe `stdata`).
+
+```{r}
+load(stdata_path)
+ls()
+```
+
+## Problem 6 (1 pt)
+
+Ask R to produce the variable labels for this dataframe. Copy and paste your R syntax and output here. Look at these carefully. Make sure you understand your variables’ unit of measurement.
+
+```{r}
+var_labels <- data.frame(
+  variable = names(stdata),
+  label = vapply(stdata, function(x) attr(x, "label") %||% NA_character_, character(1)),
+  stringsAsFactors = FALSE
+)
+var_labels
+```
+
+## Problem 7 (3 pts)
+
+Compute the following variables: (a) state spending on education per pupil; (b) the rate of legal executions per 10,000,000 residents; and (c) the homicide rate, expressed as murders per 100,000 residents.
+
+From now on, you should be analyzing these rates you have constructed. It does not make sense to analyze the original variables, the values of which are influenced a great deal by the population size of the state.
+
+```{r}
+stdata$edspend_pp <- (stdata$edspend * 1000) / stdata$schpopco
+stdata$execrate_10m <- (stdata$executco / stdata$popco) * 10000000
+stdata$homrate_100k <- (stdata$murdco / stdata$popco) * 100000
+
+head(stdata[c("abbr", "edspend_pp", "read8th", "execrate_10m", "homrate_100k")])
+```
+
+## Problems 8-13
+
+Carry out these procedures to look at two correlations: one correlation between state spending on education (per pupil) and 8th grade reading test scores, and one correlation between homicide rates and rates of legal executions.
+
+## Problem 8 (4 pts)
+
+Ask R to produce normality tests for both variables involved in the correlation.
+
+```{r}
+stat.desc(stdata[c("edspend_pp", "read8th")], norm = TRUE)
+stat.desc(stdata[c("homrate_100k", "execrate_10m")], norm = TRUE)
+```
+
+## Problem 9 (16 pts)
+
+Ask R to produce histograms showing the distribution of each variable involved in the correlation (two histograms per correlation, four total). Your histograms should have clear titles (1 pt per graph) and axis labels (2 pts per graph). Axis labels should make clear the unit of measurement. You should choose sensible arguments for the minimum value, maximum value, and binning width (1 pt per graph).
+
+```{r}
+ggplot(data = stdata, aes(edspend_pp)) +
+  geom_histogram(
+    breaks = seq(3000, 10200, by = 500),
+    aes(y = (..count..) * 100 / sum(..count..)),
+    fill = "grey70",
+    color = "black"
+  ) +
+  ggtitle("Distribution of State Education Spending per Pupil") +
+  xlab("Education Spending per Pupil (US dollars)") +
+  ylab("Percent of States")
+```
+
+```{r}
+ggplot(data = stdata, aes(read8th)) +
+  geom_histogram(
+    breaks = seq(236, 276, by = 2),
+    aes(y = (..count..) * 100 / sum(..count..)),
+    fill = "grey70",
+    color = "black"
+  ) +
+  ggtitle("Distribution of 8th Grade Reading Scores") +
+  xlab("8th Grade Reading Score (NAEP points)") +
+  ylab("Percent of States")
+```
+
+```{r}
+ggplot(data = stdata, aes(homrate_100k)) +
+  geom_histogram(
+    breaks = seq(0, 36, by = 2),
+    aes(y = (..count..) * 100 / sum(..count..)),
+    fill = "grey70",
+    color = "black"
+  ) +
+  ggtitle("Distribution of Homicide Rate") +
+  xlab("Homicides per 100,000 residents") +
+  ylab("Percent of States")
+```
+
+```{r}
+ggplot(data = stdata, aes(execrate_10m)) +
+  geom_histogram(
+    breaks = seq(0, 12, by = 0.75),
+    aes(y = (..count..) * 100 / sum(..count..)),
+    fill = "grey70",
+    color = "black"
+  ) +
+  ggtitle("Distribution of Execution Rate") +
+  xlab("Executions per 10,000,000 residents") +
+  ylab("Percent of States")
+```
+
+## Problem 10 (10 points)
+
+Produce a scatterplot showing the relationship between the two variables, with a loess regression line overlaying the scatterplot (one scatterplot per correlation, for a total of two correlations). Your scatterplot should have a clear title (1 pt), clear axis labels (2 pts), and a sensible choice for your axis ranges (1 pt). Copy and paste your R syntax and graphs here.
+
+```{r}
+ggplot(data = stdata, aes(x = edspend_pp, y = read8th)) +
+  geom_point(color = "black") +
+  geom_smooth(method = "loess", se = FALSE, color = "dodgerblue4") +
+  ggtitle("Education Spending per Pupil and Reading Scores") +
+  xlab("Education Spending per Pupil (US dollars)") +
+  ylab("8th Grade Reading Score (NAEP points)") +
+  ylim(c(236, 276)) +
+  xlim(c(3000, 10200))
+```
+
+```{r}
+ggplot(data = stdata, aes(x = execrate_10m, y = homrate_100k)) +
+  geom_point(color = "black") +
+  geom_smooth(method = "loess", se = FALSE, color = "dodgerblue4") +
+  ggtitle("Execution Rates and Homicide Rates") +
+  xlab("Executions per 10,000,000 residents") +
+  ylab("Homicides per 100,000 residents") +
+  ylim(c(0, 36)) +
+  xlim(c(0, 12))
+```
+
+## Problem 11 (6 pts)
+
+Look at your normality tests, your histograms, and your scatterplots. Are these variables normally distributed? Is there cause to be concerned that outliers could be unduly influencing your results? On the basis of your answer, what kind of correlation do you settle on—a Pearson correlation, or a Winsorized correlation?
+
+The distributions are not approximately normal, especially for homicide and execution rates. The normality output shows large skewness for `homrate_100k` (4.50) and `execrate_10m` (1.74), and very low Shapiro-Wilk values (`W = 0.557` and `W = 0.602`, both `p < .001`). Even education spending and reading show significant non-normality (`p < .05`) with visible skew and influential points in the plots. Because outliers can strongly influence Pearson estimates, the preferred analysis for both relationships is the 20% Winsorized correlation.
+
+## Problem 12 (4 pts)
+
+Carry out both the Pearson and Winsorized correlations.
+
+```{r}
+# Education spending per pupil and reading
+wincor(stdata$edspend_pp, stdata$read8th, tr = 0)
+wincor(stdata$edspend_pp, stdata$read8th, tr = .2)
+
+# Homicide and execution rates
+wincor(stdata$homrate_100k, stdata$execrate_10m, tr = 0)
+wincor(stdata$homrate_100k, stdata$execrate_10m, tr = .2)
+```
+
+## Problem 13 (4 pts)
+
+Report your preferred correlation in one sentence (one sentence per correlation) as you would in a publication.
+
+Using the 20% Winsorized correlation, higher education spending per pupil was associated with higher 8th grade reading scores, `r_w = .398`, `p = .005`.
+
+Using the 20% Winsorized correlation, higher execution rates were associated with higher homicide rates, `r_w = .451`, `p = .001`.
+
+## Problem 14 (2 pts)
+
+Explain why the Winsorized correlation is stronger than the Pearson correlation in both of these correlations.
+
+The Pearson correlation is sensitive to extreme points, and both relationships include influential observations that pull the linear fit toward weaker slopes. The Winsorized approach trims and shrinks the effect of those extremes, so the estimated associations reflect the central trend more strongly. That is why both Winsorized coefficients are larger than the corresponding Pearson coefficients.
+
+## Problem 15 (2 pts)
+
+One of your correlations is looking at education spending, which in the original dataset is recorded in thousands of dollars. If you converted the variable into dollars, how would this affect the correlation?
+
+It would not change the correlation at all. Correlation is scale-invariant, so multiplying education spending by 1,000 changes the units but not the standardized association (`r`).
+
+## Problem 16 (2 pts)
+
+You show your correlation between homicide and execution rates to a sociologist, who interprets the data to suggest that capital punishment causes murder rates to rise. Can your analysis prove this interpretation?
+
+No. A correlation from observational state-level data cannot establish causality. The result shows association, but it cannot rule out reverse causation, omitted variables, or confounding factors, so it cannot prove that executions cause homicide rates to rise.
