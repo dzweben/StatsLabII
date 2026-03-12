@@ -3,7 +3,7 @@ title: "Lab 13"
 author: "Joshua Klugman"
 output:
   word_document:
-    reference_docx: "../lab13.docx"
+    reference_docx: "Lab_13_final.docx"
 ---
 
 ```{r setup, include=FALSE}
