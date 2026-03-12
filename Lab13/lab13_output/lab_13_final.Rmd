@@ -8,35 +8,6 @@ output:
     toc_depth: 2
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
-
-# Resolve files whether knitting from Lab13/ or Lab13/lab13_output/.
-find_file <- function(fname) {
-  candidates <- c(fname, file.path("..", fname))
-  hit <- candidates[file.exists(candidates)]
-  if (length(hit) == 0) stop(sprintf("%s not found. Set working directory to Lab13.", fname))
-  hit[1]
-}
-
-options(scipen = 100)
-options(digits = 3)
-
-library(ggplot2)
-library(pastecs)
-
-if (file.exists("Rallfun-v45.txt") || file.exists("../Rallfun-v45.txt")) {
-  source(find_file("Rallfun-v45.txt"))
-} else {
-  source("https://osf.io/download/98b7r/")
-}
-
-stdata_path <- find_file("stdata_v2.rda")
-load(stdata_path)
-
-`%||%` <- function(x, y) if (is.null(x)) y else x
-```
-
 Analyze the `stdata_v2.rda` datafile with the correlation techniques we discussed in class. This is 2005 data collected from the 50 states plus the District of Columbia.
 
 ## Problem 1 (0 pts)
@@ -62,10 +33,10 @@ library(pastecs)
 Load Rand Wilcox’s script file into memory. We will use the `wincor` functions to get correlations and hypothesis tests.
 
 ```{r}
-if (file.exists("Rallfun-v45.txt") || file.exists("../Rallfun-v45.txt")) {
-  source(find_file("Rallfun-v45.txt"))
+if (file.exists("Rallfun-v45.txt")) {
+  source("Rallfun-v45.txt")
 } else {
-  source("https://osf.io/download/98b7r/")
+  source("../Rallfun-v45.txt")
 }
 ```
 
@@ -73,7 +44,8 @@ if (file.exists("Rallfun-v45.txt") || file.exists("../Rallfun-v45.txt")) {
 
 Set your working directory.
 
-```{r}
+```{r, eval=FALSE}
+setwd("/Users/dannyzweben/Desktop/GradClass/Y1/S2/StatsII/StatsII-Labs/Lab13")
 getwd()
 ```
 
@@ -82,7 +54,11 @@ getwd()
 Load the `stdata_v2.rda` data into memory (this contains the dataframe `stdata`).
 
 ```{r}
-load(stdata_path)
+if (file.exists("stdata_v2.rda")) {
+  load("stdata_v2.rda")
+} else {
+  load("../stdata_v2.rda")
+}
 ls()
 ```
 
@@ -93,7 +69,10 @@ Ask R to produce the variable labels for this dataframe. Copy and paste your R s
 ```{r}
 var_labels <- data.frame(
   variable = names(stdata),
-  label = vapply(stdata, function(x) attr(x, "label") %||% NA_character_, character(1)),
+  label = vapply(stdata, function(x) {
+    lbl <- attr(x, "label")
+    if (is.null(lbl)) NA_character_ else lbl
+  }, character(1)),
   stringsAsFactors = FALSE
 )
 var_labels
