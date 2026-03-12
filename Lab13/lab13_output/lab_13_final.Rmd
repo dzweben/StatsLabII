@@ -191,7 +191,7 @@ ggplot(data = stdata, aes(x = execrate_10m, y = homrate_100k)) +
 
 Look at your normality tests, your histograms, and your scatterplots. Are these variables normally distributed? Is there cause to be concerned that outliers could be unduly influencing your results? On the basis of your answer, what kind of correlation do you settle on—a Pearson correlation, or a Winsorized correlation?
 
-The distributions are not approximately normal, especially for homicide and execution rates. The normality output shows large skewness for `homrate_100k` (4.50) and `execrate_10m` (1.74), and very low Shapiro-Wilk values (`W = 0.557` and `W = 0.602`, both `p < .001`). Even education spending and reading show significant non-normality (`p < .05`) with visible skew and influential points in the plots. Because outliers can strongly influence Pearson estimates, the preferred analysis for both relationships is the 20% Winsorized correlation.
+All four variables show statistically significant departures from normality by Shapiro-Wilk tests: `edspend_pp` (`W = 0.906`, `p < .001`), `read8th` (`W = 0.938`, `p = .010`), `homrate_100k` (`W = 0.557`, `p < .001`), and `execrate_10m` (`W = 0.602`, `p < .001`). Departures are especially strong for homicide and execution rates (skewness `= 4.50` and `1.74`). Following the lab-session decision rule, the preferred estimator for both relationships is the 20% Winsorized correlation.
 
 ## Problem 12 (4 pts)
 
@@ -211,24 +211,24 @@ wincor(stdata$homrate_100k, stdata$execrate_10m, tr = .2)
 
 Report your preferred correlation in one sentence (one sentence per correlation) as you would in a publication.
 
-Using the 20% Winsorized correlation, higher education spending per pupil was associated with higher 8th grade reading scores, `r_w = .398`, `p = .005`.
+State education spending per pupil was positively associated with 8th-grade reading scores, `r_w = .398`, `p = .005` (20% Winsorized correlation).
 
-Using the 20% Winsorized correlation, higher execution rates were associated with higher homicide rates, `r_w = .451`, `p = .001`.
+State execution rates were positively associated with homicide rates, `r_w = .451`, `p = .001` (20% Winsorized correlation).
 
 ## Problem 14 (2 pts)
 
 Explain why the Winsorized correlation is stronger than the Pearson correlation in both of these correlations.
 
-The Pearson correlation is sensitive to extreme points, and both relationships include influential observations that pull the linear fit toward weaker slopes. The Winsorized approach trims and shrinks the effect of those extremes, so the estimated associations reflect the central trend more strongly. That is why both Winsorized coefficients are larger than the corresponding Pearson coefficients.
+Pearson `r` is sensitive to extreme cases. In these data, extreme states attenuate the linear association, so Pearson correlations are smaller. The 20% Winsorized procedure downweights those extremes and therefore returns larger coefficients.
 
 ## Problem 15 (2 pts)
 
 One of your correlations is looking at education spending, which in the original dataset is recorded in thousands of dollars. If you converted the variable into dollars, how would this affect the correlation?
 
-It would not change the correlation at all. Correlation is scale-invariant, so multiplying education spending by 1,000 changes the units but not the standardized association (`r`).
+It would not change the correlation. Rescaling education spending from thousands of dollars to dollars multiplies the variable by a constant, and correlation is scale-invariant.
 
 ## Problem 16 (2 pts)
 
 You show your correlation between homicide and execution rates to a sociologist, who interprets the data to suggest that capital punishment causes murder rates to rise. Can your analysis prove this interpretation?
 
-No. A correlation from observational state-level data cannot establish causality. The result shows association, but it cannot rule out reverse causation, omitted variables, or confounding factors, so it cannot prove that executions cause homicide rates to rise.
+No. This is an observational, cross-sectional correlation analysis, so it identifies association only. It cannot establish causal direction and cannot rule out confounding variables.

@@ -1695,8 +1695,8 @@ tests.</p>
 <div id="problem-4-0-pts" class="section level2">
 <h2>Problem 4 (0 pts)</h2>
 <p>Set your working directory.</p>
-<pre class="r"><code>getwd()</code></pre>
-<pre><code>## [1] &quot;/Users/dannyzweben/Desktop/GradClass/Y1/S2/StatsII/StatsII-Labs/Lab13/lab13_output&quot;</code></pre>
+<pre class="r"><code>setwd(&quot;/Users/dannyzweben/Desktop/GradClass/Y1/S2/StatsII/StatsII-Labs/Lab13&quot;)
+getwd()</code></pre>
 </div>
 <div id="problem-5-0-pts" class="section level2">
 <h2>Problem 5 (0 pts)</h2>
@@ -3943,16 +3943,17 @@ Are these variables normally distributed? Is there cause to be concerned
 that outliers could be unduly influencing your results? On the basis of
 your answer, what kind of correlation do you settle on—a Pearson
 correlation, or a Winsorized correlation?</p>
-<p>The distributions are not approximately normal, especially for
-homicide and execution rates. The normality output shows large skewness
-for <code>homrate_100k</code> (4.50) and <code>execrate_10m</code>
-(1.74), and very low Shapiro-Wilk values (<code>W = 0.557</code> and
-<code>W = 0.602</code>, both <code>p &lt; .001</code>). Even education
-spending and reading show significant non-normality
-(<code>p &lt; .05</code>) with visible skew and influential points in
-the plots. Because outliers can strongly influence Pearson estimates,
-the preferred analysis for both relationships is the 20% Winsorized
-correlation.</p>
+<p>All four variables show statistically significant departures from
+normality by Shapiro-Wilk tests: <code>edspend_pp</code>
+(<code>W = 0.906</code>, <code>p &lt; .001</code>), <code>read8th</code>
+(<code>W = 0.938</code>, <code>p = .010</code>),
+<code>homrate_100k</code> (<code>W = 0.557</code>,
+<code>p &lt; .001</code>), and <code>execrate_10m</code>
+(<code>W = 0.602</code>, <code>p &lt; .001</code>). Departures are
+especially strong for homicide and execution rates (skewness
+<code>= 4.50</code> and <code>1.74</code>). Following the lab-session
+decision rule, the preferred estimator for both relationships is the 20%
+Winsorized correlation.</p>
 </div>
 <div id="problem-12-4-pts" class="section level2">
 <h2>Problem 12 (4 pts)</h2>
@@ -4012,23 +4013,21 @@ wincor(stdata$homrate_100k, stdata$execrate_10m, tr = 0)</code></pre>
 <h2>Problem 13 (4 pts)</h2>
 <p>Report your preferred correlation in one sentence (one sentence per
 correlation) as you would in a publication.</p>
-<p>Using the 20% Winsorized correlation, higher education spending per
-pupil was associated with higher 8th grade reading scores,
-<code>r_w = .398</code>, <code>p = .005</code>.</p>
-<p>Using the 20% Winsorized correlation, higher execution rates were
-associated with higher homicide rates, <code>r_w = .451</code>,
-<code>p = .001</code>.</p>
+<p>State education spending per pupil was positively associated with
+8th-grade reading scores, <code>r_w = .398</code>, <code>p = .005</code>
+(20% Winsorized correlation).</p>
+<p>State execution rates were positively associated with homicide rates,
+<code>r_w = .451</code>, <code>p = .001</code> (20% Winsorized
+correlation).</p>
 </div>
 <div id="problem-14-2-pts" class="section level2">
 <h2>Problem 14 (2 pts)</h2>
 <p>Explain why the Winsorized correlation is stronger than the Pearson
 correlation in both of these correlations.</p>
-<p>The Pearson correlation is sensitive to extreme points, and both
-relationships include influential observations that pull the linear fit
-toward weaker slopes. The Winsorized approach trims and shrinks the
-effect of those extremes, so the estimated associations reflect the
-central trend more strongly. That is why both Winsorized coefficients
-are larger than the corresponding Pearson coefficients.</p>
+<p>Pearson <code>r</code> is sensitive to extreme cases. In these data,
+extreme states attenuate the linear association, so Pearson correlations
+are smaller. The 20% Winsorized procedure downweights those extremes and
+therefore returns larger coefficients.</p>
 </div>
 <div id="problem-15-2-pts" class="section level2">
 <h2>Problem 15 (2 pts)</h2>
@@ -4036,9 +4035,9 @@ are larger than the corresponding Pearson coefficients.</p>
 the original dataset is recorded in thousands of dollars. If you
 converted the variable into dollars, how would this affect the
 correlation?</p>
-<p>It would not change the correlation at all. Correlation is
-scale-invariant, so multiplying education spending by 1,000 changes the
-units but not the standardized association (<code>r</code>).</p>
+<p>It would not change the correlation. Rescaling education spending
+from thousands of dollars to dollars multiplies the variable by a
+constant, and correlation is scale-invariant.</p>
 </div>
 <div id="problem-16-2-pts" class="section level2">
 <h2>Problem 16 (2 pts)</h2>
@@ -4046,10 +4045,9 @@ units but not the standardized association (<code>r</code>).</p>
 sociologist, who interprets the data to suggest that capital punishment
 causes murder rates to rise. Can your analysis prove this
 interpretation?</p>
-<p>No. A correlation from observational state-level data cannot
-establish causality. The result shows association, but it cannot rule
-out reverse causation, omitted variables, or confounding factors, so it
-cannot prove that executions cause homicide rates to rise.</p>
+<p>No. This is an observational, cross-sectional correlation analysis,
+so it identifies association only. It cannot establish causal direction
+and cannot rule out confounding variables.</p>
 </div>
 
 
