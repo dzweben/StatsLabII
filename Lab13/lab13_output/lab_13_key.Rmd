@@ -389,7 +389,7 @@ ggplot(data = stdata, aes(x = execrate_10m, y = homrate_100k)) +
 
 Look at your normality tests, your histograms, and your scatterplots. Are these variables normally distributed? Is there cause to be concerned that outliers could be unduly influencing your results? On the basis of your answer, what kind of correlation do you settle on—a Pearson correlation, or a Winsorized correlation?
 
-All four variables show statistically significant departures from normality by Shapiro-Wilk tests: `edspend_pp` (`W = 0.906`, `p < .001`), `read8th` (`W = 0.938`, `p = .010`), `homrate_100k` (`W = 0.557`, `p < .001`), and `execrate_10m` (`W = 0.602`, `p < .001`). Departures are especially strong for homicide and execution rates (skewness `= 4.50` and `1.74`). Following the lab-session decision rule, the preferred estimator for both relationships is the 20% Winsorized correlation.
+All four variables show statistically significant departures from normality by Shapiro-Wilk tests: `edspend_pp` (`W = 0.906`, `p < .001`), `read8th` (`W = 0.938`, `p = .010`), `homrate_100k` (`W = 0.557`, `p < .001`), and `execrate_10m` (`W = 0.602`, `p < .001`). Departures are especially strong for homicide and execution rates (skewness `= 4.50` and `1.74`). Therefore, the preferred estimator for both relationships is the 20% Winsorized correlation.
 
 ## Problem 12 (4 pts)
 
