@@ -63,6 +63,12 @@ ls()
 Ask R to produce the variable labels for this dataframe. Copy and paste your R syntax and output here. Look at these carefully. Make sure you understand your variables’ unit of measurement.
 
 ```{r}
+if (is.null(attributes(stdata)[["variable.labels"]])) {
+  attr(stdata, "variable.labels") <- vapply(stdata, function(x) {
+    lbl <- attr(x, "label")
+    if (is.null(lbl)) NA_character_ else lbl
+  }, character(1))
+}
 attributes(stdata)["variable.labels"]
 ```
 
