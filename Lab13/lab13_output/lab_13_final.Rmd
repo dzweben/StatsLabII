@@ -55,6 +55,14 @@ if (file.exists("stdata_v2.rda")) {
 } else {
   load("../stdata_v2.rda")
 }
+
+# Compatibility: this .rda stores labels on columns, so add top-level labels once.
+if (is.null(attributes(stdata)[["variable.labels"]])) {
+  attr(stdata, "variable.labels") <- vapply(stdata, function(x) {
+    lbl <- attr(x, "label")
+    if (is.null(lbl)) "" else lbl
+  }, character(1))
+}
 ls()
 ```
 
@@ -63,15 +71,6 @@ ls()
 Ask R to produce the variable labels for this dataframe. Copy and paste your R syntax and output here. Look at these carefully. Make sure you understand your variables’ unit of measurement.
 
 ```{r}
-# `stdata` stores labels on each column (`attr(x, "label")`) and may not include
-# a top-level `variable.labels` attribute in every environment. We add it once so
-# the taught one-liner below returns the full label set.
-if (is.null(attributes(stdata)[["variable.labels"]])) {
-  attr(stdata, "variable.labels") <- vapply(stdata, function(x) {
-    lbl <- attr(x, "label")
-    if (is.null(lbl)) NA_character_ else lbl
-  }, character(1))
-}
 attributes(stdata)["variable.labels"]
 ```
 
@@ -188,7 +187,7 @@ ggplot(data = stdata, aes(x = execrate_10m, y = homrate_100k)) +
 
 Look at your normality tests, your histograms, and your scatterplots. Are these variables normally distributed? Is there cause to be concerned that outliers could be unduly influencing your results? On the basis of your answer, what kind of correlation do you settle on—a Pearson correlation, or a Winsorized correlation?
 
-All four variables show statistically significant departures from normality by Shapiro-Wilk tests: `edspend_pp` (`W = 0.906`, `p < .001`), `read8th` (`W = 0.938`, `p = .010`), `homrate_100k` (`W = 0.557`, `p < .001`), and `execrate_10m` (`W = 0.602`, `p < .001`). Departures are especially strong for homicide and execution rates (skewness `= 4.50` and `1.74`). Therefore, the preferred estimator for both relationships is the 20% Winsorized correlation.
+All four variables show statistically significant departures from normality by Shapiro-Wilk tests: `edspend_pp` (`W = 0.906`, `p < .001`), `read8th` (`W = 0.938`, `p = .010`), `homrate_100k` (`W = 0.557`, `p < .001`), and `execrate_10m` (`W = 0.602`, `p < .001`). Using the lab criterion, `skew.2SE` exceeds `|1|` for all four variables (1.64, -1.30, 6.74, 2.61), and `kurt.2SE` also exceeds `|1|` for homicide and execution rates (19.14 and 1.34). Therefore, the preferred estimator for both relationships is the 20% Winsorized correlation.
 
 ## Problem 12 (4 pts)
 
