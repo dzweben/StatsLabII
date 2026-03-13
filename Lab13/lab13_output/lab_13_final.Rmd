@@ -63,6 +63,9 @@ ls()
 Ask R to produce the variable labels for this dataframe. Copy and paste your R syntax and output here. Look at these carefully. Make sure you understand your variables’ unit of measurement.
 
 ```{r}
+# `stdata` stores labels on each column (`attr(x, "label")`) and may not include
+# a top-level `variable.labels` attribute in every environment. We add it once so
+# the taught one-liner below returns the full label set.
 if (is.null(attributes(stdata)[["variable.labels"]])) {
   attr(stdata, "variable.labels") <- vapply(stdata, function(x) {
     lbl <- attr(x, "label")
