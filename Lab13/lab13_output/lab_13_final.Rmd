@@ -33,11 +33,7 @@ library(pastecs)
 Load Rand Wilcox’s script file into memory. We will use the `wincor` functions to get correlations and hypothesis tests.
 
 ```{r}
-if (file.exists("Rallfun-v45.txt")) {
-  source("Rallfun-v45.txt")
-} else {
-  source("../Rallfun-v45.txt")
-}
+source("https://osf.io/download/9kq2d/")
 ```
 
 ## Problem 4 (0 pts)
@@ -67,15 +63,7 @@ ls()
 Ask R to produce the variable labels for this dataframe. Copy and paste your R syntax and output here. Look at these carefully. Make sure you understand your variables’ unit of measurement.
 
 ```{r}
-var_labels <- data.frame(
-  variable = names(stdata),
-  label = vapply(stdata, function(x) {
-    lbl <- attr(x, "label")
-    if (is.null(lbl)) NA_character_ else lbl
-  }, character(1)),
-  stringsAsFactors = FALSE
-)
-var_labels
+attributes(stdata)["variable.labels"]
 ```
 
 ## Problem 7 (3 pts)
