@@ -1,0 +1,438 @@
+---
+title: "Lab 14"
+author: "Joshua Klugman"
+output:
+  word_document:
+    reference_docx: "../lab14.docx"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+
+find_file <- function(fname) {
+  candidates <- c(fname, file.path("..", fname))
+  hit <- candidates[file.exists(candidates)]
+  if (length(hit) == 0) stop(sprintf("%s not found. Set working directory to Lab14.", fname))
+  hit[1]
+}
+
+options(scipen = 100)
+options(digits = 3)
+
+library(haven)
+library(ggplot2)
+library(labelled)
+library(psych)
+library(stargazer)
+
+load(find_file("ecls.rda"))
+```
+
+In this assignment, you will use the `ecls.rda` dataset and conduct two simple linear regressions where spring kindergarten reading scores are the outcome. One predictor is the family’s income, and the other predictor is the number of children less than 18 years old who live in the household.
+
+As you progress through the assignment, you may need to customize `options(scipen=VALUE)` to encourage R to use or not use scientific notation (the higher the value, the less likely R is to use scientific notation) and `options(digits=VALUE)` to encourage R to round to a certain number of digits.
+
+## Problem 1 (0 pts)
+
+Preliminaries. Install and load into memory these packages: haven (you will not use any haven functions, but you will read in a haven-formatted dataframe and so it is good to have the package loaded); ggplot2 (to make graphs); labelled (to view variable labels); psych (we will use the describe function for descriptives); and stargazer (to put your regression results into nicely formatted tables).
+
+Syntax:
+
+```{r p1_syntax, eval=FALSE}
+library(haven)
+library(ggplot2)
+library(labelled)
+library(psych)
+library(stargazer)
+```
+
+Output:
+
+```{r p1_output, echo=FALSE}
+library(haven)
+library(ggplot2)
+library(labelled)
+library(psych)
+library(stargazer)
+search()[1:8]
+```
+
+## Problem 2 (0 pts)
+
+Load the `ecls.rda` datafile.
+
+Syntax:
+
+```{r p2_syntax, eval=FALSE}
+load("ecls.rda")
+```
+
+Output:
+
+```{r p2_output, echo=FALSE}
+load(find_file("ecls.rda"))
+ls()
+```
+
+## Problem 3 (1 pt)
+
+Ask R to produce the variable labels for all labels.
+
+Syntax:
+
+```{r p3_syntax, eval=FALSE}
+attributes(ecls)["variable.labels"]
+```
+
+Output:
+
+```{r p3_output, echo=FALSE}
+attributes(ecls)["variable.labels"]
+```
+
+## Problem 4 (3 pt)
+
+Create z-standardized versions of the reading score, family income, and # of children in the household variables. Do NOT overwrite the original variables.
+
+Syntax:
+
+```{r p4_syntax, eval=FALSE}
+ecls$z_read <- as.numeric(scale(ecls$c2rtscor))
+ecls$z_income <- as.numeric(scale(ecls$wkincome))
+ecls$z_kids <- as.numeric(scale(ecls$p2less18))
+```
+
+Output:
+
+```{r p4_output, echo=FALSE}
+ecls$z_read <- as.numeric(scale(ecls$c2rtscor))
+ecls$z_income <- as.numeric(scale(ecls$wkincome))
+ecls$z_kids <- as.numeric(scale(ecls$p2less18))
+describe(ecls[c("z_read", "z_income", "z_kids")])[, c("mean", "sd", "min", "max")]
+```
+
+## Problem 5 (1 pt)
+
+Create a new variable that is family income (which is originally in dollars) rescaled so it is in thousands.
+
+Syntax:
+
+```{r p5_syntax, eval=FALSE}
+ecls$income_k <- ecls$wkincome / 1000
+```
+
+Output:
+
+```{r p5_output, echo=FALSE}
+ecls$income_k <- ecls$wkincome / 1000
+summary(ecls$income_k)
+```
+
+## Problem 6 (1 pt)
+
+Create a subsetted dataframe containing the childid, reading score (original and z-standardized), income (rescaled and z-standardized), # of kids (original and z-standardized) variables. The dataframe should only consist of subjects with complete information on these variables.
+
+Syntax:
+
+```{r p6_syntax, eval=FALSE}
+sub_ecls <- subset(
+  ecls,
+  !is.na(childid) & !is.na(c2rtscor) & !is.na(z_read) &
+    !is.na(income_k) & !is.na(z_income) & !is.na(p2less18) & !is.na(z_kids),
+  select = c(childid, c2rtscor, z_read, income_k, z_income, p2less18, z_kids)
+)
+```
+
+Output:
+
+```{r p6_output, echo=FALSE}
+sub_ecls <- subset(
+  ecls,
+  !is.na(childid) & !is.na(c2rtscor) & !is.na(z_read) &
+    !is.na(income_k) & !is.na(z_income) & !is.na(p2less18) & !is.na(z_kids),
+  select = c(childid, c2rtscor, z_read, income_k, z_income, p2less18, z_kids)
+)
+head(sub_ecls)
+```
+
+## Problem 7 (2 pts)
+
+Get the number of cases in the original ECLS data frame and the number of cases you get after deleting cases with missing values. WHat is the number of cases dropped?
+
+Syntax:
+
+```{r p7_syntax, eval=FALSE}
+nrow(ecls)
+nrow(sub_ecls)
+nrow(ecls) - nrow(sub_ecls)
+```
+
+Output:
+
+```{r p7_output, echo=FALSE}
+nrow(ecls)
+nrow(sub_ecls)
+nrow(ecls) - nrow(sub_ecls)
+```
+
+## Problem 8 (1 pt)
+
+To be safe, remove the original ecls dataframe from your R workspace.
+
+Syntax:
+
+```{r p8_syntax, eval=FALSE}
+rm(ecls)
+```
+
+Output:
+
+```{r p8_output, echo=FALSE}
+rm(ecls)
+ls()
+```
+
+## Problem 9 (6 pts)
+
+Construct a histogram of the distribution of the test score, income, and # of children variables (use the original variables). The histograms should show percentages and have clear axis labels.
+
+Syntax:
+
+```{r p9_syntax_1, eval=FALSE}
+ggplot(sub_ecls, aes(c2rtscor)) +
+  geom_histogram(aes(y = (..count..) * 100 / sum(..count..))) +
+  ylab("Percent") +
+  xlab("Spring Kindergarten Reading Score (points)")
+```
+
+Output:
+
+```{r p9_output_1, echo=FALSE, fig.cap="Reading-score histogram"}
+ggplot(sub_ecls, aes(c2rtscor)) +
+  geom_histogram(aes(y = (..count..) * 100 / sum(..count..)), fill = "grey70", color = "black") +
+  ylab("Percent") +
+  xlab("Spring Kindergarten Reading Score (points)") +
+  ggtitle("Distribution of Spring Kindergarten Reading Scores")
+```
+
+Syntax:
+
+```{r p9_syntax_2, eval=FALSE}
+ggplot(sub_ecls, aes(income_k)) +
+  geom_histogram(aes(y = (..count..) * 100 / sum(..count..))) +
+  ylab("Percent") +
+  xlab("Family Income ($1,000s)")
+```
+
+Output:
+
+```{r p9_output_2, echo=FALSE, fig.cap="Income histogram"}
+ggplot(sub_ecls, aes(income_k)) +
+  geom_histogram(aes(y = (..count..) * 100 / sum(..count..)), fill = "grey70", color = "black") +
+  ylab("Percent") +
+  xlab("Family Income ($1,000s)") +
+  ggtitle("Distribution of Family Income")
+```
+
+Syntax:
+
+```{r p9_syntax_3, eval=FALSE}
+ggplot(sub_ecls, aes(p2less18)) +
+  geom_histogram(aes(y = (..count..) * 100 / sum(..count..))) +
+  ylab("Percent") +
+  xlab("Number of Household Members Aged <18")
+```
+
+Output:
+
+```{r p9_output_3, echo=FALSE, fig.cap="Number-of-children histogram"}
+ggplot(sub_ecls, aes(p2less18)) +
+  geom_histogram(aes(y = (..count..) * 100 / sum(..count..)), fill = "grey70", color = "black") +
+  ylab("Percent") +
+  xlab("Number of Household Members Aged <18") +
+  ggtitle("Distribution of Number of Children (<18)")
+```
+
+## Problem 10 (2 pts)
+
+Run separate bivariate regressions of test score (dependent variable) on family income (in $1,000s) and number of children in the household. Do NOT use the z-standardized versions of the variables. Store the results in separate objects.
+
+Syntax:
+
+```{r p10_syntax, eval=FALSE}
+m_income <- lm(c2rtscor ~ income_k, data = sub_ecls)
+m_kids <- lm(c2rtscor ~ p2less18, data = sub_ecls)
+```
+
+Output:
+
+```{r p10_output, echo=FALSE}
+m_income <- lm(c2rtscor ~ income_k, data = sub_ecls)
+m_kids <- lm(c2rtscor ~ p2less18, data = sub_ecls)
+summary(m_income)
+summary(m_kids)
+```
+
+## Problem 11 (5 pts)
+
+Use stargazer to present the results for both models in one table. Your table should have clear labels for the dependent variable and the predictors. The units of measurement of both the predictors and outcome should be clear. You should NOT use the default presentation of a single star representing marginal (p<.10) significance.
+
+Syntax:
+
+```{r p11_syntax, eval=FALSE}
+stargazer(
+  m_income, m_kids,
+  type = "text",
+  report = "vcs*",
+  title = "Bivariate Regressions Predicting Spring Kindergarten Reading Scores",
+  dep.var.caption = "Outcome",
+  dep.var.labels = c("Reading (points)", "Reading (points)"),
+  covariate.labels = c("Family Income ($1,000s)", "Number of Household Members Aged <18"),
+  star.cutoffs = c(0.05, 0.01, 0.001),
+  star.char = c("*", "**", "***"),
+  notes = "Stars: * p<.05; ** p<.01; *** p<.001",
+  notes.append = FALSE
+)
+```
+
+Output:
+
+```{r p11_output, echo=FALSE}
+stargazer(
+  m_income, m_kids,
+  type = "text",
+  report = "vcs*",
+  title = "Bivariate Regressions Predicting Spring Kindergarten Reading Scores",
+  dep.var.caption = "Outcome",
+  dep.var.labels = c("Reading (points)", "Reading (points)"),
+  covariate.labels = c("Family Income ($1,000s)", "Number of Household Members Aged <18"),
+  star.cutoffs = c(0.05, 0.01, 0.001),
+  star.char = c("*", "**", "***"),
+  notes = "Stars: * p<.05; ** p<.01; *** p<.001",
+  notes.append = FALSE
+)
+```
+
+## Problemn 12 (4 pts)
+
+Give a textbook interpretation of the intercept in both models. Your interpretation should make clear the units of measurement.
+
+Model 1 (income): When family income is $0, the predicted spring kindergarten reading score is 48.699 points.
+
+Model 2 (children): When there are 0 household members under 18, the predicted spring kindergarten reading score is 54.222 points.
+
+## Problem 13 (4 pts)
+
+Give a textbook interpretation of the slope in both models. Your interpretation should make clear the units of measurement.
+
+Model 1 (income): For each additional $1,000 of family income, predicted reading score increases by 0.0399 points, `t(17486) = 32.23`, `p < .001`.
+
+Model 2 (children): For each additional household member under 18, predicted reading score decreases by 1.3447 points, `t(17486) = -21.21`, `p < .001`.
+
+## Problem 14 (4 pts)
+
+Give a textbook interpretation of the r2 in both models.
+
+Model 1 (income): `R^2 = .056`, so family income explains 5.61% of variation in spring kindergarten reading scores.
+
+Model 2 (children): `R^2 = .025`, so number of household members under 18 explains 2.51% of variation in spring kindergarten reading scores.
+
+## Problem 15 (2 pts)
+
+Re-do the models, but this time make all variables be z-standardized.
+
+Syntax:
+
+```{r p15_syntax, eval=FALSE}
+m_income_z <- lm(z_read ~ z_income, data = sub_ecls)
+m_kids_z <- lm(z_read ~ z_kids, data = sub_ecls)
+```
+
+Output:
+
+```{r p15_output, echo=FALSE}
+m_income_z <- lm(z_read ~ z_income, data = sub_ecls)
+m_kids_z <- lm(z_read ~ z_kids, data = sub_ecls)
+summary(m_income_z)
+summary(m_kids_z)
+```
+
+## Problem 16 (2 pt)
+
+Re-do your stargazer table with the new models. Your table should make clear the units of measurement (SD).
+
+Syntax:
+
+```{r p16_syntax, eval=FALSE}
+stargazer(
+  m_income_z, m_kids_z,
+  type = "text",
+  report = "vcs*",
+  title = "Bivariate Regressions Predicting Reading Scores (SD Units)",
+  dep.var.caption = "Outcome",
+  dep.var.labels = c("Reading (SD)", "Reading (SD)"),
+  covariate.labels = c("Family Income (SD)", "Number of Household Members Aged <18 (SD)"),
+  star.cutoffs = c(0.05, 0.01, 0.001),
+  star.char = c("*", "**", "***"),
+  notes = "Stars: * p<.05; ** p<.01; *** p<.001",
+  notes.append = FALSE
+)
+```
+
+Output:
+
+```{r p16_output, echo=FALSE}
+stargazer(
+  m_income_z, m_kids_z,
+  type = "text",
+  report = "vcs*",
+  title = "Bivariate Regressions Predicting Reading Scores (SD Units)",
+  dep.var.caption = "Outcome",
+  dep.var.labels = c("Reading (SD)", "Reading (SD)"),
+  covariate.labels = c("Family Income (SD)", "Number of Household Members Aged <18 (SD)"),
+  star.cutoffs = c(0.05, 0.01, 0.001),
+  star.char = c("*", "**", "***"),
+  notes = "Stars: * p<.05; ** p<.01; *** p<.001",
+  notes.append = FALSE
+)
+```
+
+## Problem 17 (2 pts)
+
+Give a textbook interpretation for the intercept for the model where # of children in the household is the predictor.
+
+In the z-standardized children model, when the number of household members under 18 is at the sample mean (`z_kids = 0`), predicted reading score is 0.0235 SD above the mean.
+
+## Problem 18 (2 pts)
+
+Give a textbook interpretation for the slope for the model where # of children in the household is the predictor.
+
+In the z-standardized children model, a 1 SD increase in number of household members under 18 predicts a 0.162 SD decrease in reading scores, `t(17486) = -21.21`, `p < .001`.
+
+## Problem 19 (2 pts)
+
+Ask R to report summaries of the model objects so you can get the p values for the slopes. (it does not matter if you use a model using the raw metrics or the z-standardized variables).
+
+Syntax:
+
+```{r p19_syntax, eval=FALSE}
+summary(m_income)
+summary(m_kids)
+```
+
+Output:
+
+```{r p19_output, echo=FALSE}
+summary(m_income)
+summary(m_kids)
+```
+
+## Problem 20 (6 pts)
+
+In ONE sentence, write-up the results of both regressions in APA style.
+
+In separate bivariate regressions, spring kindergarten reading scores were positively associated with family income (in $1,000s), `B = 0.040`, `SE = 0.001`, `t(17486) = 32.23`, `p < .001`, `R^2 = .056`, and negatively associated with number of household members under 18, `B = -1.345`, `SE = 0.063`, `t(17486) = -21.21`, `p < .001`, `R^2 = .025`.
+
+## Problem 21 (0 pts)
+
+Upload your lab to Canvas. Double check to make sure the upload took.
