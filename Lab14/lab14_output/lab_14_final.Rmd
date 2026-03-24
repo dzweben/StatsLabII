@@ -26,7 +26,11 @@ library(stargazer)
 ## Problem 2 (0 pts)
 
 ```{r}
-load("../ecls.rda")
+if (file.exists("ecls.rda")) {
+  load("ecls.rda")
+} else {
+  load("../ecls.rda")
+}
 ls()
 ```
 
@@ -42,6 +46,7 @@ attributes(ecls)["variable.labels"]
 ecls$z_read <- as.numeric(scale(ecls$c2rtscor))
 ecls$z_income <- as.numeric(scale(ecls$wkincome))
 ecls$z_kids <- as.numeric(scale(ecls$p2less18))
+describe(ecls[c("z_read", "z_income", "z_kids")])[, c("mean", "sd", "min", "max")]
 ```
 
 ## Problem 5 (1 pt)
@@ -192,7 +197,7 @@ summary(m_kids)
 
 ## Problem 20 (6 pts)
 
-In separate bivariate regressions, spring kindergarten reading scores were positively associated with family income (in $1,000s), `B = 0.040`, `SE = 0.001`, `t(17486) = 32.23`, `p < .001`, `R^2 = .056`, and negatively associated with number of household members under 18, `B = -1.345`, `SE = 0.063`, `t(17486) = -21.21`, `p < .001`, `R^2 = .025`.
+In separate bivariate regressions, spring kindergarten reading scores were positively associated with family income (in $1,000s), `B = 0.040`, `β = 0.227`, `SE = 0.001`, `t(17486) = 32.23`, `p < .001`, `R^2 = .056`, and negatively associated with number of household members under 18, `B = -1.345`, `β = -0.162`, `SE = 0.063`, `t(17486) = -21.21`, `p < .001`, `R^2 = .025`.
 
 ## Problem 21 (0 pts)
 
