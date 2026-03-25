@@ -207,6 +207,12 @@ stargazer(
 
 Give a textbook interpretation of the intercept in both models. Your interpretation should make clear the units of measurement.
 
+Syntax:
+
+N/A (interpretation question)
+
+Output:
+
 Model 1 (income): When family income is $0, the predicted spring kindergarten reading score is 48.699 points.
 
 Model 2 (children): When there are 0 household members under 18, the predicted spring kindergarten reading score is 54.222 points.
@@ -215,6 +221,12 @@ Model 2 (children): When there are 0 household members under 18, the predicted s
 
 Give a textbook interpretation of the slope in both models. Your interpretation should make clear the units of measurement.
 
+Syntax:
+
+N/A (interpretation question)
+
+Output:
+
 Model 1 (income): For each additional $1,000 of family income, predicted reading score increases by 0.0399 points, `t(17486) = 32.23`, `p < .001`.
 
 Model 2 (children): For each additional household member under 18, predicted reading score decreases by 1.3447 points, `t(17486) = -21.21`, `p < .001`.
@@ -222,6 +234,12 @@ Model 2 (children): For each additional household member under 18, predicted rea
 ## Problem 14 (4 pts)
 
 Give a textbook interpretation of the `R^2` in both models.
+
+Syntax:
+
+N/A (interpretation question)
+
+Output:
 
 Model 1 (income): `R^2 = .056`, so family income explains 5.61% of variation in spring kindergarten reading scores.
 
@@ -270,11 +288,23 @@ stargazer(
 
 Give a textbook interpretation for the intercept for the model where # of children in the household is the predictor.
 
+Syntax:
+
+N/A (interpretation question)
+
+Output:
+
 In the z-standardized children model, when the number of household members under 18 is at the sample mean (`z_kids = 0`), predicted reading score is 0.0235 SD above the mean.
 
 ## Problem 18 (2 pts)
 
 Give a textbook interpretation for the slope for the model where # of children in the household is the predictor.
+
+Syntax:
+
+N/A (interpretation question)
+
+Output:
 
 In the z-standardized children model, a 1 SD increase in number of household members under 18 predicts a 0.162 SD decrease in reading scores, `t(17486) = -21.21`, `p < .001`.
 
@@ -295,8 +325,20 @@ summary(m_kids)
 
 In ONE sentence, write up the results of both regressions in APA style.
 
+Syntax:
+
+N/A (write-up question)
+
+Output:
+
 In separate bivariate regressions, spring kindergarten reading scores were positively associated with family income (in $1,000s), `B = 0.040`, `β = 0.227`, `SE = 0.001`, `t(17486) = 32.23`, `p < .001`, `R^2 = .056`, and negatively associated with number of household members under 18, `B = -1.345`, `β = -0.162`, `SE = 0.063`, `t(17486) = -21.21`, `p < .001`, `R^2 = .025`.
 
 ## Problem 21 (0 pts)
+
+Syntax:
+
+N/A
+
+Output:
 
 Upload your lab to Canvas. Double check to make sure the upload took.
