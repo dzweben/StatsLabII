@@ -14,7 +14,9 @@ In this assignment, you will use the `ecls.rda` dataset and conduct two simple l
 
 Preliminaries. Install and load into memory these packages: `haven` (you will not use any `haven` functions, but you will read in a `haven`-formatted dataframe and so it is good to have the package loaded); `ggplot2` (to make graphs); `labelled` (to view variable labels); `psych` (we will use the `describe` function for descriptives); and `stargazer` (to put your regression results into nicely formatted tables).
 
-Syntax + Output:
+Syntax:
+
+Output:
 
 ```{r}
 options(scipen = 100)
@@ -31,7 +33,9 @@ library(stargazer)
 
 Load the `ecls.rda` datafile.
 
-Syntax + Output:
+Syntax:
+
+Output:
 
 ```{r}
 if (file.exists("ecls.rda")) {
@@ -46,7 +50,9 @@ ls()
 
 Ask R to produce the variable labels for all labels.
 
-Syntax + Output:
+Syntax:
+
+Output:
 
 ```{r}
 attributes(ecls)["variable.labels"]
@@ -56,7 +62,9 @@ attributes(ecls)["variable.labels"]
 
 Create z-standardized versions of the reading score, family income, and # of children in the household variables. Do NOT overwrite the original variables.
 
-Syntax + Output:
+Syntax:
+
+Output:
 
 ```{r}
 ecls$z_read <- as.numeric(scale(ecls$c2rtscor))
@@ -69,7 +77,9 @@ describe(ecls[c("z_read", "z_income", "z_kids")])[, c("mean", "sd", "min", "max"
 
 Create a new variable that is family income (which is originally in dollars) rescaled so it is in thousands.
 
-Syntax + Output:
+Syntax:
+
+Output:
 
 ```{r}
 ecls$income_k <- ecls$wkincome / 1000
@@ -79,7 +89,9 @@ ecls$income_k <- ecls$wkincome / 1000
 
 Create a subsetted dataframe containing the childid, reading score (original and z-standardized), income (rescaled and z-standardized), # of kids (original and z-standardized) variables. The dataframe should only consist of subjects with complete information on these variables.
 
-Syntax + Output:
+Syntax:
+
+Output:
 
 ```{r}
 sub_ecls <- subset(
@@ -95,7 +107,9 @@ head(sub_ecls)
 
 Get the number of cases in the original ECLS data frame and the number of cases you get after deleting cases with missing values. What is the number of cases dropped?
 
-Syntax + Output:
+Syntax:
+
+Output:
 
 ```{r}
 nrow(ecls)
@@ -107,7 +121,9 @@ nrow(ecls) - nrow(sub_ecls)
 
 To be safe, remove the original `ecls` dataframe from your R workspace.
 
-Syntax + Output:
+Syntax:
+
+Output:
 
 ```{r}
 rm(ecls)
@@ -118,7 +134,9 @@ ls()
 
 Construct a histogram of the distribution of the test score, income, and # of children variables (use the original variables). The histograms should show percentages and have clear axis labels.
 
-Syntax + Output:
+Syntax:
+
+Output:
 
 ```{r}
 ggplot(sub_ecls, aes(c2rtscor)) +
@@ -148,7 +166,9 @@ ggplot(sub_ecls, aes(p2less18)) +
 
 Run separate bivariate regressions of test score (dependent variable) on family income (in $1,000s) and number of children in the household. Do NOT use the z-standardized versions of the variables. Store the results in separate objects.
 
-Syntax + Output:
+Syntax:
+
+Output:
 
 ```{r}
 m_income <- lm(c2rtscor ~ income_k, data = sub_ecls)
@@ -163,7 +183,9 @@ Use `stargazer` to present the results for both models in one table. Your table 
 
 Here is some `stargazer` syntax you may find helpful. I recommend running `stargazer` using just the `type = "text"` option and then adding options one at a time to see how they affect your table.
 
-Syntax + Output:
+Syntax:
+
+Output:
 
 ```{r}
 stargazer(
@@ -209,7 +231,9 @@ Model 2 (children): `R^2 = .025`, so number of household members under 18 explai
 
 Re-do the models, but this time make all variables be z-standardized.
 
-Syntax + Output:
+Syntax:
+
+Output:
 
 ```{r}
 m_income_z <- lm(z_read ~ z_income, data = sub_ecls)
@@ -222,7 +246,9 @@ summary(m_kids_z)
 
 Re-do your `stargazer` table with the new models. Your table should make clear the units of measurement (SD).
 
-Syntax + Output:
+Syntax:
+
+Output:
 
 ```{r}
 stargazer(
@@ -256,7 +282,9 @@ In the z-standardized children model, a 1 SD increase in number of household mem
 
 Ask R to report summaries of the model objects so you can get the p values for the slopes (it does not matter if you use a model using the raw metrics or the z-standardized variables).
 
-Syntax + Output:
+Syntax:
+
+Output:
 
 ```{r}
 summary(m_income)
