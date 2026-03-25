@@ -10,6 +10,18 @@ output:
 
 In this assignment, you will use the `ecls.rda` dataset and conduct two simple linear regressions where spring kindergarten reading scores are the outcome. One predictor is the family’s income, and the other predictor is the number of children less than 18 years old who live in the household.
 
+As you progress through the assignment, you may need to customize `options(scipen=VALUE)` to encourage R to use or not use scientific notation (the higher the value, the less likely R is to use scientific notation) and `options(digits=VALUE)` to encourage R to round to a certain number of digits.
+
+* Integrate your answers in this Word document.  
+* For any problem asking you to carry out an operation in R, copy and paste your syntax and any R output below the respective question.
+* For questions that ask you to do manual calculations, you should show your work. Using R for manual calculations is allowed and encouraged (show your R syntax and output).
+* For each lab assignment, you should maintain an organized organized syntax file ("script")
+  + With comments prefaced by `#` that explain what you are doing
+  + missteps/mistakes are deleted
+  + in case you lose your work, you can run your script and reproduce your analyses.
+  + Some labs may require you to build on analyses/data cleaning you did in a prior lab and saving scripts easily allow you to do that
+* You need to upload this document to Canvas by the deadline *and check Canvas to make sure your upload took*
+
 ## Problem 1 (0 pts)
 
 Preliminaries. Install and load into memory these packages: `haven` (you will not use any `haven` functions, but you will read in a `haven`-formatted dataframe and so it is good to have the package loaded); `ggplot2` (to make graphs); `labelled` (to view variable labels); `psych` (we will use the `describe` function for descriptives); and `stargazer` (to put your regression results into nicely formatted tables).
@@ -141,7 +153,7 @@ summary(m_kids)
 
 Use `stargazer` to present the results for both models in one table. Your table should have clear labels for the dependent variable and the predictors. The units of measurement of both the predictors and outcome should be clear. You should NOT use the default presentation of a single star representing marginal (`p < .10`) significance.
 
-Here is some `stargazer` syntax you may find helpful. I recommend running `stargazer` using just the `type = "text"` option and then adding options one at a time to see how they affect your table.
+Here is some `stargazer` syntax you may find helpful. I recommend running `stargazer` using just the `type="text"` option and then adding the options one at a time to see how they affect your table. You should be especially careful with `covariate.labels` as you do NOT want to mislabel your predictors. If you have questions about the `stargazer` syntax the [documentation](https://cran.r-project.org/web/packages/stargazer/stargazer.pdf) is helpful.
 
 ```{r}
 stargazer(
@@ -177,7 +189,7 @@ Model 2 (children): For each additional household member under 18, predicted rea
 
 ## Problem 14 (4 pts)
 
-Give a textbook interpretation of the `R^2` in both models.
+Give a textbook interpretation of the r^2^ in both models.
 
 Model 1 (income): `R^2 = .056`, so family income explains 5.61% of variation in spring kindergarten reading scores.
 
