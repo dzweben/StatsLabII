@@ -12,6 +12,8 @@ In this assignment, you will use the `ecls.rda` dataset and conduct two simple l
 
 ## Problem 1 (0 pts)
 
+Preliminaries. Install and load into memory these packages: `haven` (you will not use any `haven` functions, but you will read in a `haven`-formatted dataframe and so it is good to have the package loaded); `ggplot2` (to make graphs); `labelled` (to view variable labels); `psych` (we will use the `describe` function for descriptives); and `stargazer` (to put your regression results into nicely formatted tables).
+
 ```{r}
 options(scipen = 100)
 options(digits = 3)
@@ -25,6 +27,8 @@ library(stargazer)
 
 ## Problem 2 (0 pts)
 
+Load the `ecls.rda` datafile.
+
 ```{r}
 if (file.exists("ecls.rda")) {
   load("ecls.rda")
@@ -36,11 +40,15 @@ ls()
 
 ## Problem 3 (1 pt)
 
+Ask R to produce the variable labels for all labels.
+
 ```{r}
 attributes(ecls)["variable.labels"]
 ```
 
 ## Problem 4 (3 pt)
+
+Create z-standardized versions of the reading score, family income, and # of children in the household variables. Do NOT overwrite the original variables.
 
 ```{r}
 ecls$z_read <- as.numeric(scale(ecls$c2rtscor))
@@ -51,11 +59,15 @@ describe(ecls[c("z_read", "z_income", "z_kids")])[, c("mean", "sd", "min", "max"
 
 ## Problem 5 (1 pt)
 
+Create a new variable that is family income (which is originally in dollars) rescaled so it is in thousands.
+
 ```{r}
 ecls$income_k <- ecls$wkincome / 1000
 ```
 
 ## Problem 6 (1 pt)
+
+Create a subsetted dataframe containing the childid, reading score (original and z-standardized), income (rescaled and z-standardized), # of kids (original and z-standardized) variables. The dataframe should only consist of subjects with complete information on these variables.
 
 ```{r}
 sub_ecls <- subset(
@@ -69,6 +81,8 @@ head(sub_ecls)
 
 ## Problem 7 (2 pts)
 
+Get the number of cases in the original ECLS data frame and the number of cases you get after deleting cases with missing values. What is the number of cases dropped?
+
 ```{r}
 nrow(ecls)
 nrow(sub_ecls)
@@ -77,12 +91,16 @@ nrow(ecls) - nrow(sub_ecls)
 
 ## Problem 8 (1 pt)
 
+To be safe, remove the original `ecls` dataframe from your R workspace.
+
 ```{r}
 rm(ecls)
 ls()
 ```
 
 ## Problem 9 (6 pts)
+
+Construct a histogram of the distribution of the test score, income, and # of children variables (use the original variables). The histograms should show percentages and have clear axis labels.
 
 ```{r}
 ggplot(sub_ecls, aes(c2rtscor)) +
@@ -110,6 +128,8 @@ ggplot(sub_ecls, aes(p2less18)) +
 
 ## Problem 10 (2 pts)
 
+Run separate bivariate regressions of test score (dependent variable) on family income (in $1,000s) and number of children in the household. Do NOT use the z-standardized versions of the variables. Store the results in separate objects.
+
 ```{r}
 m_income <- lm(c2rtscor ~ income_k, data = sub_ecls)
 m_kids <- lm(c2rtscor ~ p2less18, data = sub_ecls)
@@ -118,6 +138,10 @@ summary(m_kids)
 ```
 
 ## Problem 11 (5 pts)
+
+Use `stargazer` to present the results for both models in one table. Your table should have clear labels for the dependent variable and the predictors. The units of measurement of both the predictors and outcome should be clear. You should NOT use the default presentation of a single star representing marginal (`p < .10`) significance.
+
+Here is some `stargazer` syntax you may find helpful. I recommend running `stargazer` using just the `type = "text"` option and then adding options one at a time to see how they affect your table.
 
 ```{r}
 stargazer(
@@ -137,11 +161,15 @@ stargazer(
 
 ## Problemn 12 (4 pts)
 
+Give a textbook interpretation of the intercept in both models. Your interpretation should make clear the units of measurement.
+
 Model 1 (income): When family income is $0, the predicted spring kindergarten reading score is 48.699 points.
 
 Model 2 (children): When there are 0 household members under 18, the predicted spring kindergarten reading score is 54.222 points.
 
 ## Problem 13 (4 pts)
+
+Give a textbook interpretation of the slope in both models. Your interpretation should make clear the units of measurement.
 
 Model 1 (income): For each additional $1,000 of family income, predicted reading score increases by 0.0399 points, `t(17486) = 32.23`, `p < .001`.
 
@@ -149,11 +177,15 @@ Model 2 (children): For each additional household member under 18, predicted rea
 
 ## Problem 14 (4 pts)
 
+Give a textbook interpretation of the `R^2` in both models.
+
 Model 1 (income): `R^2 = .056`, so family income explains 5.61% of variation in spring kindergarten reading scores.
 
 Model 2 (children): `R^2 = .025`, so number of household members under 18 explains 2.51% of variation in spring kindergarten reading scores.
 
 ## Problem 15 (2 pts)
+
+Re-do the models, but this time make all variables be z-standardized.
 
 ```{r}
 m_income_z <- lm(z_read ~ z_income, data = sub_ecls)
@@ -163,6 +195,8 @@ summary(m_kids_z)
 ```
 
 ## Problem 16 (2 pt)
+
+Re-do your `stargazer` table with the new models. Your table should make clear the units of measurement (SD).
 
 ```{r}
 stargazer(
@@ -182,13 +216,19 @@ stargazer(
 
 ## Problem 17 (2 pts)
 
+Give a textbook interpretation for the intercept for the model where # of children in the household is the predictor.
+
 In the z-standardized children model, when the number of household members under 18 is at the sample mean (`z_kids = 0`), predicted reading score is 0.0235 SD above the mean.
 
 ## Problem 18 (2 pts)
 
+Give a textbook interpretation for the slope for the model where # of children in the household is the predictor.
+
 In the z-standardized children model, a 1 SD increase in number of household members under 18 predicts a 0.162 SD decrease in reading scores, `t(17486) = -21.21`, `p < .001`.
 
 ## Problem 19 (2 pts)
+
+Ask R to report summaries of the model objects so you can get the p values for the slopes (it does not matter if you use a model using the raw metrics or the z-standardized variables).
 
 ```{r}
 summary(m_income)
@@ -196,6 +236,8 @@ summary(m_kids)
 ```
 
 ## Problem 20 (6 pts)
+
+In ONE sentence, write up the results of both regressions in APA style.
 
 In separate bivariate regressions, spring kindergarten reading scores were positively associated with family income (in $1,000s), `B = 0.040`, `β = 0.227`, `SE = 0.001`, `t(17486) = 32.23`, `p < .001`, `R^2 = .056`, and negatively associated with number of household members under 18, `B = -1.345`, `β = -0.162`, `SE = 0.063`, `t(17486) = -21.21`, `p < .001`, `R^2 = .025`.
 
