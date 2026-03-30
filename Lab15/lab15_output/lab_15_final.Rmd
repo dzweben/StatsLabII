@@ -1,0 +1,301 @@
+---
+title: "Lab 15"
+author: "Danny Zweben"
+output:
+  html_document:
+    df_print: paged
+    toc: true
+    toc_depth: 2
+---
+
+In this assignment, you will use the `ecls.rda` dataset and examine a potential nonlinear association between income and test scores.
+
+As you progress through the assignment, you may need to customize `options(scipen=VALUE)` to encourage R to use or not use scientific notation (the higher the value, the less likely R is to use scientific notation) and `options(digits=VALUE)` to encourage R to round to a certain number of digits.
+
+* Integrate your answers in this Word document.
+* For any problem asking you to carry out an operation in R, copy and paste your syntax and any R output below the respective question.
+* For questions that ask you to do manual calculations, you should show your work. Using R for manual calculations is allowed and encouraged (show your R syntax and output).
+* For each lab assignment, you should maintain an organized organized syntax file ("script")
+  + With comments prefaced by `#` that explain what you are doing
+  + missteps/mistakes are deleted
+  + in case you lose your work, you can run your script and reproduce your analyses.
+  + Some labs may require you to build on analyses/data cleaning you did in a prior lab and saving scripts easily allow you to do that
+* You need to upload this document to Canvas by the deadline *and check Canvas to make sure your upload took*
+
+## Problem 1 (0 pts)
+
+Load into memory these packages: `dplyr`, `effects`, `ggplot2`, `haven`, and `stargazer`. If these packages are not already installed on your version of R then you should install them as well.
+
+```{r}
+options(scipen = 100)
+options(digits = 6)
+
+library(dplyr)
+library(effects)
+library(ggplot2)
+library(haven)
+library(stargazer)
+
+search()[1:8]
+```
+
+## Problem 2 (0 pts)
+
+Download the `ecls.rda` datafile from Canvas and load it into R.
+
+```{r}
+if (file.exists("ecls.rda")) {
+  load("ecls.rda")
+} else {
+  load("../ecls.rda")
+}
+ls()
+```
+
+## Problem 3 (2 pts)
+
+Use base R's `summary` function to get descriptives of the kindergarten reading score variable ("c2rtscor") and the family income variable ("wkincome").
+
+```{r}
+summary(ecls$c2rtscor)
+summary(ecls$wkincome)
+```
+
+## Problem 2 (1 pt)
+
+Create a *z*-standardized version of reading test scores. **For the rest of the assignment, when I ask you to use the test scores variable, use this one, not the original variable containing the raw metric.**
+
+```{r}
+ecls$read_z <- as.numeric(scale(ecls$c2rtscor))
+summary(ecls$read_z)
+```
+
+## Problem 3 (1 pt)
+
+Create a rescaled version of income such that the unit of measurement is $10,000 (as opposed to single dollars). **For the rest of the assignment, when I ask you to use the income variable, use this one, not the original income using dollars as the unit of measurement.**
+
+```{r}
+ecls$income10k <- ecls$wkincome / 10000
+summary(ecls$income10k)
+```
+
+## Problem 4 (1 pt)
+
+Get the number of cases in the ECLS data.
+
+```{r}
+nrow(ecls)
+```
+
+## Problem 5 (2 pts)
+
+Subset the data so that you only have cases with valid values on both the reading score and income variables. From now on just use this new subsetted data frame.
+
+```{r}
+sub_ecls <- subset(ecls, !is.na(read_z) & !is.na(income10k))
+head(sub_ecls[c("childid", "read_z", "income10k")])
+```
+
+## Problem 5 (1 pt)
+
+Get the number of cases in the subsetted data. How many cases did you drop?
+
+```{r}
+nrow(sub_ecls)
+nrow(ecls) - nrow(sub_ecls)
+```
+
+## Problem 6 (4 pt)
+
+Produce a histogram distribution of the test score and income variables.
+
+```{r}
+ggplot(data = sub_ecls, aes(x = read_z, y = (..count..) * 100 / sum(..count..))) +
+  geom_histogram(binwidth = 0.2, fill = "grey70", color = "black") +
+  labs(
+    title = "Distribution of Spring Kindergarten Reading Scores (z)",
+    x = "Spring Kindergarten Reading Score (z)",
+    y = "Percent"
+  )
+```
+
+```{r}
+ggplot(data = sub_ecls, aes(x = income10k, y = (..count..) * 100 / sum(..count..))) +
+  geom_histogram(binwidth = 2, fill = "grey70", color = "black") +
+  labs(
+    title = "Distribution of Family Income",
+    x = "Family Income ($10,000s)",
+    y = "Percent"
+  )
+```
+
+## Problem 7 (2 pts)
+
+Produce a scatterplot showing the relationship between income and reading scores.
+
+In addition to the scatterplot (`geom_point`), you should also graph three predictions for reading scores based on income using three methods:
+
+* A linear regression without any transformation, in red
+* A linear regression where .0001 is added to income, and this sum is log transformed, in green
+* Ideally, we would include predictions based on locally-estimated scatterplot smoothing ("loess"). Unfortunately, there is too many cases and I suspect R will not process a loess line for most of you. Instead, let us approximate a loess line by using a linear regression with a sextic polynomial function of income (*income*^1^, *income*^2^, *income*^3^, *income*^4^, *income*^5^, and *income*^6^), in blue
+
+```{r}
+ggplot(data = sub_ecls, aes(x = income10k, y = read_z)) +
+  geom_point(alpha = 0.25) +
+  geom_smooth(method = "lm", formula = y ~ x, color = "red") +
+  geom_smooth(method = "lm", formula = y ~ log(x + .0001), color = "green") +
+  geom_smooth(method = "lm", formula = y ~ poly(x, 6), color = "blue") +
+  labs(
+    title = "Income and Spring Kindergarten Reading Scores",
+    x = "Family Income ($10,000s)",
+    y = "Spring Kindergarten Reading Score (z)"
+  )
+```
+
+## Problem 8 (1 pt)
+
+Which line (linear regression without transformation, and linear regression using a log transformation of income) best approximates the line from the sextic polynomial function?
+
+The green line (linear regression using the log transformation of income) best approximates the sextic polynomial line.
+
+## Problem 9 (2 pts)
+
+Run two separate regressions--reading scores (dependent variable) on raw income in $10,000s (independent variable) and reading scores (dependent variable) on the natural log of income (in $10,000s) + .0001 (independent variable). Save the models as separate objects.
+
+```{r}
+m_raw <- lm(read_z ~ income10k, data = sub_ecls)
+m_log <- lm(read_z ~ I(log(income10k + .0001)), data = sub_ecls)
+
+summary(m_raw)
+summary(m_log)
+```
+
+## Problem 10 (5 pts)
+
+Use `stargazer` to present the results of both models.
+
+Use stargazer to present the results for both models in one table. Your table should have clear labels for the dependent variable and the predictors. The units of measurement of both the predictors and outcome should be clear. You should NOT use the default presentation of a single star representing marginal (p<.10) significance.
+
+Here is some stargazer syntax you may find helpful. I recommend running stargazer using just the type="text" option and then adding the options one at a time to see how they affect your table. You should be especially careful with `covariate.labels` as you do NOT want to mislabel your predictors. If you have questions about the stargazer syntax the documentation is helpful.
+
+```{r}
+stargazer(
+  m_raw, m_log,
+  type = "text",
+  report = "vcst*",
+  title = "Linear vs Level-Log Models Predicting Spring Kindergarten Reading Scores",
+  dep.var.caption = "Outcome",
+  dep.var.labels = c("Spring Kindergarten Reading Score (z)", "Spring Kindergarten Reading Score (z)"),
+  covariate.labels = c("Family Income ($10,000s)", "ln(Family Income ($10,000s) + .0001)"),
+  star.cutoffs = c(0.05, 0.01, 0.001),
+  star.char = c("*", "**", "***"),
+  notes = "Stars: * p<.05; ** p<.01; *** p<.001",
+  notes.append = FALSE
+)
+```
+
+## Problem 11 (1 pt)
+
+According to the R^2^, which model fits the data better?
+
+The level-log model fits the data better because it has the larger `R^2`.
+
+## Problem 12 (1 pt)
+
+Ask R to generate a sequence of numbers ranging from 0 to 100 in .5 increments. These will represent values of the income variable for which you want predictions. Remember income is in $10,000s, so 0 to 100 on this variable is actually $0 to $1,000,000! Save this sequence as a data object.
+
+```{r}
+income_seq <- seq(0, 100, 0.5)
+income_seq
+```
+
+## Problem 13 (3 pts)
+
+Use the `effect` function in the `effects` package to produce predicted reading scores based on the model using log income.
+
+```{r}
+eff_income <- effect("income10k", m_log, xlevels = list(income10k = income_seq))
+eff_income
+```
+
+## Problem 14 (2 pts)
+
+Coerce the "eff object" into a data frame. This should be a NEW data frame--give it a different name than any other data frame you have used for this assignment. We will use this dataframe to graph the predicted incomes.
+
+Print this new data frame.
+
+```{r}
+pred_df <- as.data.frame(eff_income)
+head(pred_df, 12)
+```
+
+## Problem 15 (5 pts)
+
+Look at the prediction when the income variable equals .5 (remember the "fit" variable is the prediction!) Show the calculations the model used to get this prediction.
+
+```{r}
+coef(m_log)
+manual_pred_05 <- coef(m_log)[1] + coef(m_log)[2] * log(0.5 + .0001)
+manual_pred_05
+pred_df[pred_df$income10k == 0.5, c("income10k", "fit")]
+```
+
+Model calculation shown explicitly:
+
+\[
+\hat{y} = b_0 + b_1\ln(income10k + 0.0001)
+\]
+
+\[
+\hat{y} = -0.2322 + 0.1956\ln(0.5001) = -0.3677
+\]
+
+## Problem 16 (2 pts)
+
+In this new data frame which we will use to make our graph, we need a variable that captures the original income metric (single dollars). Create this variable **in the new data frame**.
+
+```{r}
+pred_df$income_dollars <- pred_df$income10k * 10000
+head(pred_df[c("income10k", "income_dollars")], 12)
+```
+
+## Problem 17 (5 pts)
+
+Graph the nonlinear relationship between income (in dollars) and reading scores. Your graph should have a clear title and axis labels--there should be no ambiguity about the variable's unit of measurement. You may have to do some Googling to figure out how to resize titles or axis labels, or how to introduce a line break.
+
+To specify the `size` of the `geom_point`s, I recommend a value between .5 and 1.0. To specify the `alpha` (transparency) of the `geom_ribbon`, you should go for a value between 0 and 1, and probably closer to 0 than 1. The `fill` and `color` options specify the color of the ribbon and the ribbon's border, respectively (I recommend you use the same color here). Googling r and color will give you a list of color names R understands.
+
+```{r}
+ggplot(data = pred_df, aes(x = income_dollars, y = fit)) +
+  geom_point(size = 0.7) +
+  geom_ribbon(
+    alpha = 0.2,
+    fill = "skyblue3",
+    color = "skyblue3",
+    aes(ymin = lower, ymax = upper)
+  ) +
+  labs(
+    title = "Predicted Spring Kindergarten Reading Scores by Family Income",
+    x = "Family Income (US dollars)",
+    y = "Predicted Spring Kindergarten Reading Score (z)"
+  ) +
+  theme_minimal()
+```
+
+## Problem 18 (5 pts)
+
+Do a level-log interpretation of the association between log income and reading scores illustrating a comparison between two kindergarteners where one kindergartener's family has an income that is 10 percent higher than the other kindergartener's.
+
+```{r}
+b_log <- coef(m_log)[2]
+tenpct_change <- b_log * log(1.10)
+tenpct_change
+```
+
+For a 10% higher family income, the model predicts a `0.0186` SD higher spring kindergarten reading score.
+
+## Problem 19 (5 pts)
+
+Write-up the association between log income and reading scores, APA style. In one sentence, write-up the direction and significance of the coefficient. In another sentence, describe the relationship depicted in the graph you just created. Your answer should be two sentences **maximum**.
+
+In the level-log model, log family income was positively associated with spring kindergarten reading scores, `B = 0.196`, `t(18165) = 35.06`, `p < .001`, `R^2 = .063`. The graph shows a positive nonlinear relationship where predicted reading scores increase sharply at lower income levels and then continue to increase more gradually at higher income levels.

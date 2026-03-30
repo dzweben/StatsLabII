@@ -1,0 +1,159 @@
+---
+title: "Lab Session 23"
+author: "Joshua Klugman"
+output: 
+  word_document:
+    highlight: kate
+    reference_docx: style_template2.docx
+    fig_caption: no
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# The Level-Log Model
+
+Using data from the 1991 General Social Survey (GSS), we will investigate the linear and non-linear relationship between years of schooling and personal income. We can treat years of schooling as our independent variable (IV) and income as the dependent variable (DV).
+
+
+![Listing of models using log transformation](table.png)
+
+We will be exploring a "level-log" model where personal income (the outcome) is not transformed and years of schooling (the predictor) is log-transformed.  In reality, it would be conventional to do a "log-level" model where income is log transformed (which it commonly is in the social sciences) and schooling is kept in its original raw values.  **For the sake of illustration we are doing an unconventional level-log model.**
+
+## 1. Set otions and load packages
+
+```{r, eval=F}
+library(tidyverse)
+library(psych)
+library(stargazer)
+library(haven)
+library(effects)
+options(digits=4)
+```
+
+## 2. Load data
+
+```{r, eval=F}
+df_raw <- haven::read_sav("GSS1991.sav")
+```
+
+## 3. Select only variables of interest.
+
+Let’s make the data a bit friendlier to work with by selecting only a few variables of interest, `RINCOM91`, `CONRINC`, and `EDUC` (`RINCOM91` is the original ordinal coded version of personal income; `CONRINC` used midpoint coding to get a  continuous version.  We will use `RINCOM91` only for data management and not for any analyses).
+
+```{r, eval=F}
+df<-subset(df_raw, select=c(RINCOM91, CONRINC, EDUC))
+```
+
+## 4. Get value labels and distributions for all variables.
+
+```{r, eval=F}
+attr(df$VARIABLE, "labels")
+table(df$VARIABLE, exclude = NULL)
+```
+
+
+## 5. Coerce income variables to be numeric
+
+```{r, eval=F}
+df$RINCOM91<-as.numeric(df$RINCOM91)
+df$CONRINC<-as.numeric(df$CONRINC)
+df$EDUC<-as.numeric(df$EDUC)
+```
+
+## 6. Placeholder - disregard
+
+## 7. Subset the data to just include cases with complete information on both variables
+
+```{r, eval=F}
+df_ss<-na.omit(df)
+```
+
+## 8. Get data information
+
+Use psych::describe() to get more information about our variables.
+
+```{r, eval=F}
+psych::describe(df_ss)
+```
+
+## 9. Linear and nonlinear regressions
+
+Now that we have our model variables, we can run two models: one that regresses personal income (IV) on years of schooling (DV) and a second that regresses personal income (IV) on logged years of schooling (DV). We can call these our level-level and level-log models, respectively (see table at the top of this handout). 
+
+```{r, eval=F}
+m1_level_level <- lm(DV ~ IV, data = df_ss)
+m1_level_log <- lm(DV ~ ?), data = df_ss)
+```
+
+## 10. Check model output in stargazer
+
+First check the model output to determine the order of covariate labels.
+
+```{r, eval=F}
+stargazer(m1_level_level, m1_level_log,
+          type = "text",
+          star.cutoffs = c(0.05, 0.01, 0.001),
+           report="vct*",digits.extra=0)
+
+```
+
+Then add in covariate and dependent variable labels.
+
+```{r, eval=F}
+stargazer(m1_level_level, m1_level_log,
+          type = "text",
+          star.cutoffs = c(0.05, 0.01, 0.001),
+          dep.var.labels = "DEPVARLABEL",
+          covariate.labels = c("VAR 1", "VAR 2"),
+          report="vct*",digits.extra=0)
+```
+
+## 11. Produce Predictions from level-log model
+
+Using effect() from the effects package, produce predictions for someone with 4 years of schooling through to someone with 20 years of schooling. Make the resulting object into a data frame using as.data.frame(). 
+
+```{r, eval=F}
+eff_level_log <- effects::effect(term = "TERM FROM MODEL",
+                                 mod = MODEL NAME,
+                              xlevels = list(EDUC = c(seq(4,20,1))))
+eff_df<-as.data.frame(eff_level_log)
+eff_df
+```
+
+## 12. Create a plot
+
+Using the predictions data frame we just created, graph the nonlinear relationship between income and log years of schooling. 
+
+```{r, eval=F}
+ggplot(data = eff_df, aes(x = EDUC, y = fit)) +
+  geom_ribbon(aes(ymin = lower, ymax = upper), 
+              alpha = 0.3, color = "yellow", fill = "yellow") +
+  geom_line() +
+  geom_point() +
+  labs(x = "X AXIS TITLE", y = "Y AXIS TITLE",
+       title = "PLOT TITLE") +
+  theme_minimal()
+```
+
+## 13. Write-up the association between log years of schooling and income, APA style
+
+Include the direction of the coefficient, significance, and a description of the relationship depicted in the graph.
+
+## 14. Write the equation for the level-log model
+
+*The natural log of a variable X can be denoted as ln(X).*
+
+$\hat{income}=intercept + \hat{b}*\text{ln}(X)$
+
+## 15. Calculate the predicted income for someone with 16 years of schooling by hand.
+
+Use the equation in the prior step and compare your answer to the predicted values in the effects data frame (they will be slightly different due to rounding). If you perform the calculation by using R as your calculator, note that you need to use log(VALUE) to calculate the natural log.  Remember that people with 16 years of schooling were coded as 16.1 years!
+
+## 16. Interpret the slope for the level-log model in increments of 10%
+
+## 17. Save R script
+
+
