@@ -56,25 +56,21 @@ ls()
 
 Use base R's `summary` function to get descriptives of the kindergarten reading score variable ("c2rtscor") and the family income variable ("wkincome").
 
-```{r}
-summary(ecls$c2rtscor)
-summary(ecls$wkincome)
-```
-
-## Problem 2 (1 pt)
+### Additional Task (1 pt): Create a z-standardized reading-score variable
 
 Create a *z*-standardized version of reading test scores. **For the rest of the assignment, when I ask you to use the test scores variable, use this one, not the original variable containing the raw metric.**
 
-```{r}
-ecls$read_z <- as.numeric(scale(ecls$c2rtscor))
-summary(ecls$read_z)
-```
-
-## Problem 3 (1 pt)
+### Additional Task (1 pt): Rescale family income to $10,000 units
 
 Create a rescaled version of income such that the unit of measurement is $10,000 (as opposed to single dollars). **For the rest of the assignment, when I ask you to use the income variable, use this one, not the original income using dollars as the unit of measurement.**
 
 ```{r}
+summary(ecls$c2rtscor)
+summary(ecls$wkincome)
+
+ecls$read_z <- as.numeric(scale(ecls$c2rtscor))
+summary(ecls$read_z)
+
 ecls$income10k <- ecls$wkincome / 10000
 summary(ecls$income10k)
 ```
@@ -91,16 +87,14 @@ nrow(ecls)
 
 Subset the data so that you only have cases with valid values on both the reading score and income variables. From now on just use this new subsetted data frame.
 
-```{r}
-sub_ecls <- subset(ecls, !is.na(read_z) & !is.na(income10k))
-head(sub_ecls[c("childid", "read_z", "income10k")])
-```
-
-## Problem 5 (1 pt)
+### Additional Task (1 pt): Count dropped cases after subsetting
 
 Get the number of cases in the subsetted data. How many cases did you drop?
 
 ```{r}
+sub_ecls <- subset(ecls, !is.na(read_z) & !is.na(income10k))
+head(sub_ecls[c("childid", "read_z", "income10k")])
+
 nrow(sub_ecls)
 nrow(ecls) - nrow(sub_ecls)
 ```
@@ -298,4 +292,4 @@ For a 10% higher family income, the model predicts a `0.0186` SD higher spring k
 
 Write-up the association between log income and reading scores, APA style. In one sentence, write-up the direction and significance of the coefficient. In another sentence, describe the relationship depicted in the graph you just created. Your answer should be two sentences **maximum**.
 
-In the level-log model, log family income was positively associated with spring kindergarten reading scores, `B = 0.196`, `t(18165) = 35.06`, `p < .001`, `R^2 = .063`. The graph shows a positive nonlinear relationship where predicted reading scores increase sharply at lower income levels and then continue to increase more gradually at higher income levels.
+In the level-log model, log family income was positively associated with spring kindergarten reading scores, `B = 0.196`, `SE = 0.006`, `t(18165) = 35.06`, `p < .001`, `R^2 = .063`. The graph shows a positive nonlinear relationship where predicted reading scores increase sharply at lower income levels and then continue to increase more gradually at higher income levels.

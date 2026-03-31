@@ -1633,16 +1633,10 @@ pts)</a></li>
 pts)</a></li>
 <li><a href="#problem-3-2-pts" id="toc-problem-3-2-pts">Problem 3 (2
 pts)</a></li>
-<li><a href="#problem-2-1-pt" id="toc-problem-2-1-pt">Problem 2 (1
-pt)</a></li>
-<li><a href="#problem-3-1-pt" id="toc-problem-3-1-pt">Problem 3 (1
-pt)</a></li>
 <li><a href="#problem-4-1-pt" id="toc-problem-4-1-pt">Problem 4 (1
 pt)</a></li>
 <li><a href="#problem-5-2-pts" id="toc-problem-5-2-pts">Problem 5 (2
 pts)</a></li>
-<li><a href="#problem-5-1-pt" id="toc-problem-5-1-pt">Problem 5 (1
-pt)</a></li>
 <li><a href="#problem-6-4-pt" id="toc-problem-6-4-pt">Problem 6 (4
 pt)</a></li>
 <li><a href="#problem-7-2-pts" id="toc-problem-7-2-pts">Problem 7 (2
@@ -1755,35 +1749,36 @@ ls()</code></pre>
 <p>Use base R’s <code>summary</code> function to get descriptives of the
 kindergarten reading score variable (“c2rtscor”) and the family income
 variable (“wkincome”).</p>
+<div id="additional-task-1-pt-create-a-z-standardized-reading-score-variable" class="section level3">
+<h3>Additional Task (1 pt): Create a z-standardized reading-score
+variable</h3>
+<p>Create a <em>z</em>-standardized version of reading test scores.
+<strong>For the rest of the assignment, when I ask you to use the test
+scores variable, use this one, not the original variable containing the
+raw metric.</strong></p>
+</div>
+<div id="additional-task-1-pt-rescale-family-income-to-10000-units" class="section level3">
+<h3>Additional Task (1 pt): Rescale family income to $10,000 units</h3>
+<p>Create a rescaled version of income such that the unit of measurement
+is $10,000 (as opposed to single dollars). <strong>For the rest of the
+assignment, when I ask you to use the income variable, use this one, not
+the original income using dollars as the unit of
+measurement.</strong></p>
 <pre class="r"><code>summary(ecls$c2rtscor)</code></pre>
 <pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA&#39;s 
 ##    14.9    44.4    51.5    50.6    57.1    83.2    2323</code></pre>
 <pre class="r"><code>summary(ecls$wkincome)</code></pre>
 <pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA&#39;s 
 ##       0   21000   40000   52040   68000 1000000    1119</code></pre>
-</div>
-<div id="problem-2-1-pt" class="section level2">
-<h2>Problem 2 (1 pt)</h2>
-<p>Create a <em>z</em>-standardized version of reading test scores.
-<strong>For the rest of the assignment, when I ask you to use the test
-scores variable, use this one, not the original variable containing the
-raw metric.</strong></p>
 <pre class="r"><code>ecls$read_z &lt;- as.numeric(scale(ecls$c2rtscor))
 summary(ecls$read_z)</code></pre>
 <pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA&#39;s 
 ##  -3.602  -0.628   0.085   0.000   0.656   3.284    2323</code></pre>
-</div>
-<div id="problem-3-1-pt" class="section level2">
-<h2>Problem 3 (1 pt)</h2>
-<p>Create a rescaled version of income such that the unit of measurement
-is $10,000 (as opposed to single dollars). <strong>For the rest of the
-assignment, when I ask you to use the income variable, use this one, not
-the original income using dollars as the unit of
-measurement.</strong></p>
 <pre class="r"><code>ecls$income10k &lt;- ecls$wkincome / 10000
 summary(ecls$income10k)</code></pre>
 <pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA&#39;s 
 ##     0.0     2.1     4.0     5.2     6.8   100.0    1119</code></pre>
+</div>
 </div>
 <div id="problem-4-1-pt" class="section level2">
 <h2>Problem 4 (1 pt)</h2>
@@ -1796,6 +1791,10 @@ summary(ecls$income10k)</code></pre>
 <p>Subset the data so that you only have cases with valid values on both
 the reading score and income variables. From now on just use this new
 subsetted data frame.</p>
+<div id="additional-task-1-pt-count-dropped-cases-after-subsetting" class="section level3">
+<h3>Additional Task (1 pt): Count dropped cases after subsetting</h3>
+<p>Get the number of cases in the subsetted data. How many cases did you
+drop?</p>
 <pre class="r"><code>sub_ecls &lt;- subset(ecls, !is.na(read_z) &amp; !is.na(income10k))
 head(sub_ecls[c(&quot;childid&quot;, &quot;read_z&quot;, &quot;income10k&quot;)])</code></pre>
 <div data-pagedtable="false">
@@ -1803,15 +1802,11 @@ head(sub_ecls[c(&quot;childid&quot;, &quot;read_z&quot;, &quot;income10k&quot;)]
 {"columns":[{"label":["childid"],"name":[1],"type":["chr"],"align":["left"]},{"label":["read_z"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["income10k"],"name":[3],"type":["dbl"],"align":["right"]}],"data":[{"1":"0001001C","2":"0.547071","3":"14"},{"1":"0001002C","2":"1.917600","3":"12"},{"1":"0001003C","2":"-0.382427","3":"9"},{"1":"0001004C","2":"-0.155552","3":"6"},{"1":"0001005C","2":"0.476223","3":"15"},{"1":"0001006C","2":"-1.112905","3":"5"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
   </script>
 </div>
-</div>
-<div id="problem-5-1-pt" class="section level2">
-<h2>Problem 5 (1 pt)</h2>
-<p>Get the number of cases in the subsetted data. How many cases did you
-drop?</p>
 <pre class="r"><code>nrow(sub_ecls)</code></pre>
 <pre><code>## [1] 18167</code></pre>
 <pre class="r"><code>nrow(ecls) - nrow(sub_ecls)</code></pre>
 <pre><code>## [1] 3093</code></pre>
+</div>
 </div>
 <div id="problem-6-4-pt" class="section level2">
 <h2>Problem 6 (4 pt)</h2>
@@ -2194,11 +2189,11 @@ the graph you just created. Your answer should be two sentences
 <strong>maximum</strong>.</p>
 <p>In the level-log model, log family income was positively associated
 with spring kindergarten reading scores, <code>B = 0.196</code>,
-<code>t(18165) = 35.06</code>, <code>p &lt; .001</code>,
-<code>R^2 = .063</code>. The graph shows a positive nonlinear
-relationship where predicted reading scores increase sharply at lower
-income levels and then continue to increase more gradually at higher
-income levels.</p>
+<code>SE = 0.006</code>, <code>t(18165) = 35.06</code>,
+<code>p &lt; .001</code>, <code>R^2 = .063</code>. The graph shows a
+positive nonlinear relationship where predicted reading scores increase
+sharply at lower income levels and then continue to increase more
+gradually at higher income levels.</p>
 </div>
 
 
