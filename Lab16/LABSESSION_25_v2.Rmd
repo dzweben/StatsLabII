@@ -1,0 +1,143 @@
+---
+title: "Lab Session 25"
+author: "Joshua Klugman"
+output: 
+  word_document:
+    highlight: kate
+    reference_docx: style_template2.docx
+    fig_caption: no
+---
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Multiple Regression, Spuriousness, and Mediation
+
+We will be using data from the Early Childhood Longitudinal Study (ECLS) data, a cohort of kindergarteners from the 1998-1999 school year. We are interested in examining the association between general knowledge scores and parental warmth in schools. We want to see if it is spurious (caused by parental education and marital status) and if it’s mediated by other variables (parental involvement in schools, cognitively stimulating materials). 
+
+We suspect that parental education and marital status may affect both parental investment and children's cognition scores. We also suspect that warmth may explain the effect of parental investment on general knowledge scores. 
+
+![Causal diagram](causal.png)
+
+## 1. Set working directory and load packages
+
+```{r, eval=F}
+# packages
+library(tidyverse)
+library(psych)
+library(stargazer)
+library(haven)
+```
+
+## 2. Load data
+
+```{r,eval=F}
+load("ecls_labsession25.rda")
+```
+
+## 3. Get summary statistics for all variables
+
+```{r,eval=F}
+describe(ecls)
+```
+
+## 4.  Restructure marriage variable
+
+Create a new marriage variable using the existing `p2marsta` variable. This new variable should only have three levels – married, not together (divorced/separated), and other (widowed, never married, and no biological/adoptive parent).
+
+First, check the current variable structure using `table()`.
+
+```{r, eval=F}
+table(ecls$p2marsta,exclude=NULL)
+```
+
+Second, use `recode` from `dplyr` to create a new `marriage` variable with the simplified categories:
+
+```{r, eval=F}
+ecls$marriage<-recode(ecls$p2marsta,`MARRIED`="married",
+                      `SEPARATED`="not together",
+                      `DIVORCED`="not together",
+                      `WIDOWED`="other",
+                      `NEVER MARRIED`="other",
+                      `NO BIO/ADOPTIVE PARENT`="other"
+                      )
+```
+
+Finally, check your work to make sure the recodes were done correctly.
+
+```{r, eval=F}
+table(ecls$p2marsta,ecls$marriage, exclude=NULL)
+```
+
+## 5. Restructure the education variable.
+
+Create a new numeric education variable using the existing `wkpared` variable. 
+
+```{r, eval=F}
+table(ecls$wkpared,exclude=NULL)
+
+ecls$edn<-recode(ecls$wkpared, `8TH GRADE OR BELOW`=8,
+                       `9TH - 12TH GRADE`=11,
+                       `HIGH SCHOOL DIPLOMA/EQUIVALENT`=12,
+                       `VOC/TECH PROGRAM`=13,
+                       `SOME COLLEGE`=14,
+                       `BACHELOR'S DEGREE`=16,
+                       `GRADUATE/PROFESSIONAL SCHOOL-NO DEGREE`=17,
+                       `MASTER'S DEGREE (MA, MS)`=18,
+                       `DOCTORATE OR PROFESSIONAL DEGREE`=20)
+
+table(ecls$wkpared, ecls$edn, exclude=NULL)
+```
+
+
+
+## 6. Standardize general knowledge scores (`c2gtscor`), parental involvement (`parinv`), parental warmth (`warmth`), and cognitive materials (`cogmat`) 
+
+## 7. Select just the variables of interest
+
+You should just select `edn`, `marriage`, and z-standardized warmth, involvement, cognitive materials, and general knowledge socres.
+
+```{r, eval=F}
+DF<-subset(ORIGINALDATAFRAME,select=c(COMMA-SEPARATED LIST OF VARIABLES))
+```
+
+## 8. Remove missing values.
+
+Only include kids who have no missing values in all variables of interest. You can do this using na.omit() or subset(). 
+
+## 9. Fit models
+
+We want to fit four models. The first controls for parental warmth, education, and marital status. The second adds cognitive materials as a mediator. The third removes cognitive materials and adds parental involvement.  The fourth adds both mediators.  
+
+## 10. Show regression results in `stargazer`
+
+## 11. Model Comparisons
+
+Does R^2^ from Models 2, 3, and 4 significantly increase from Model 1?
+
+```{r, eval=F}
+anova(MODEL A, MODEL B)
+```
+
+## 12. Calculate Percent Change in Expanatory Power of parental warmth across models
+
+$$\frac{Slope_{new}-Slope_{old}}{Slope_{old}} \times 100$$
+
+## 13. Interpret Findings in APA Style
+
+### Answer
+
+Model 1 suggests that parental warmth has a positive association with general knowledge scores, even after controlling for parental education and marital status, $\beta$ = 0.05, t(15177) = 6.67, p < 0.001.  
+
+Models 2 and 3 explore what variables can explain this association.  The results suggest that having parents who purchase cognitive materials and are involved in their child's schooling explain some of the association.  When introducing cognitive materials in model 2, the association of parental warmth decreases by 44 percent but remains significant, $\beta$ = 0.028, t(15176)=3.81, p<0.001.  When parental involvement is introduced in model 3, the association declines by 40 percent but again remains significant, $\beta$=0.030, t(15176)=4.07, p<0.001.  
+
+When both mediators are included in model 4, the association decreases by 68 percent and remains significant, $\beta$=0.016, t(15175)=2.258, p<0.05, suggesting that aprental warmth influences general knowledge scores through mechanisms not explored in this analysis.  
+
+When comparing how mediators add explanatory power to our understanding of cognition scores, we see that both mediators add explanatory power to our analysis, but cognitive materials is a stronger predictor than parental involvement .  The R^2^ increases by 0.054 (.242-.188) when cognitive materials is added to the model, but only by  0.03 (0.218-0.188) when parental involvement is added.
+
+
+
+

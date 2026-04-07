@@ -1,0 +1,130 @@
+---
+title: "Lab Session 20 ANSWER KEY"
+author: "Joshua Klugman"
+output: 
+  word_document:
+    highlight: kate
+    reference_docx: style_template2.docx
+    fig_caption: no
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# Split-Plot ANOVA
+
+This is an example drawing on Posner "cueing" experiments.  Subjects look at a display of different colors arranged in a circle.  A cue, in the form of an arrow, appears.   Then one of the colors appears.  The outcome is the reaction time (in ms) of the eye to shift attention to the new color.
+
+Subjects' reaction times would be observed under all of these three conditions (the within-subject factor): the cue pointing to the color's position was displayed early, the cue pointing to the color's position was displayed late, and the cue was pointing to a different color's position.
+
+Trials occurred in pairs.  Subjects assigned to the "Both" condition had the same color displayed in both trials.  Subjects assigned to the "Repalce" condition had different colors displayed.
+
+Note from Josh: This was an exercise designed by a lab instructor six years ago who left cryptic documentation about the design.  I am woefully ignorant of the Posner "cueing" experiments and I am grasping at straws as to the design they had in mind.  If you think there is a better design please let me know! 
+
+![Illustration of cueing experiment](posner.png)
+
+## 1. Set working directory, load packages, read in data
+
+```{r, eval=F}
+# set working directory
+# (use pull down menus)
+
+# packages
+library(tidyverse)
+library(afex)
+library(pastecs)
+library(emmeans)
+
+load(file="cueingdata.rda")
+```
+
+## 2. Pivot From wide to long format
+
+```{r, eval=F}
+DATAFRAME_LONG <- pivot_longer(data= ,
+cols= ,
+names_to= "condition",
+values_to= )
+```
+
+## 3. The omnibus test
+
+Carry out the omnibus test.  I recommend you use the factor variable version of the condition variable (`conditionf`), not the numeric version (`Condition`).
+
+Syntax (where `BSFACTOR` is the between-subjects factor and `WSFACTOR` is the within-subjects factor)
+
+```{r, eval=F}
+MODELOBJECT<-aov_car(OUTCOME~BSFACTOR*WSFACTOR+Error(IDVARIABLE/WSFACTOR),data=LONGDATAFRAME)
+summary(MODELOBJECT)
+```
+
+## 3. Get marginal and cell means 
+
+Get emmeans objects for all marginal and cell means.
+
+Syntax (You will need to run this three times, for each main effect and the interaction.  I recommend using differently-named `EMOBJECTS`!):
+
+```{r, eval=F}
+EMOBJECT<-emmeans(MODELOBJECT,~FACTOR)
+EMOBJECT
+```
+
+## 4. Present the cell and marginal means
+
+Make an excel table of your cell and marginal means to help you understand what is going on (do not worry about polish!)
+
+## 5. Save the cell means as a data frame
+
+Syntax:
+
+```{r, eval=F}
+CELL.DATAFRAME<-as.data.frame(CELL.EMMEANS.OBJECT)
+```
+
+## 7. Produce a polished line graph showing the cell means.  
+
+Syntax (`BSFACTOR` means between-subject factor, `WSFACTOR` means within-subject factor)
+
+```{r, eval=F}
+ggplot(data=CELL.DATAFRAME,aes(x=WSFACTOR,y=emmean,color=BSFACTOR,group=BSFACTOR))+
+  geom_line()+
+  labs(ARGUMENTS)
+```
+
+## 8. Get pooled SD
+
+Re-do the omnibus test, but pretend it is a between-subject design, with each observation from a different individual.  First you will create a fake ID variable for each observation. Identify the residual MS, take its square root and get the pooled SD (round to ten thousandths, four decimal places). 
+
+Delete the model object after this problem to avoid confusion.
+
+Syntax:
+
+```{r, eval=F}
+LONGDATAFRAME$FAKEIDVARIABLE<-seq(1,nrow(LONGDATAFRAME))
+MODELOBJECT2<-aov_car(OUTCOME~WSFACTOR*BSFACTOR+Error(FAKEIDVARIABLE),data=LONGDATAFRAME)
+summary(MODELOBJECT2)
+MODELOBJECT2<-NULL
+```
+
+
+# Contrasts
+
+For each contrast: (a) write the null hypothesis (1 pt); (b) ask R to perform the contrast, if applicable(1 pt); (c) show the calculations for the adjusted critical value for a post-hoc contrast (2 pts); (d) state if you reject or retain the null (1 pt); (e) Report dav (if applicable, 1 pt).
+
+Syntax for contrasts:
+
+```{r, eval=F}
+CONTRASTVECTOR<-c(COEFFICIENT1,COEFFICIENT2,...COEFFICIENTLAST)
+CONTRASTLIST<-list(CONTRASTVECTPR)
+contrast(EMOBJECT,CONTRASTLIST)
+```
+
+## 9. Late cue versus early and neither cue (main effect)
+
+## 10. Late cue versus early and neither cue for people in "Both" (simple effect)
+
+## 11. Late cue versus early and neither cue for people in "Replace" (simple effect)
+
+## 12. Late cue versus early and neither cue, both vs replace (interaction contrast)

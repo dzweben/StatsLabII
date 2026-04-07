@@ -1,0 +1,169 @@
+---
+title: "Lab Session 21 ANSWER KEY"
+author: "Joshua Klugman"
+output: 
+  word_document:
+    highlight: kate
+    reference_docx: style_template_ak2.docx
+    fig_caption: no
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# Correlation
+
+We have a dataset containing a information about families and the math and reading scores of children in those families. We are interested in examining the relationship between some of the variables in this dataset, particularly how parental investment levels are associated with math scores.
+
+## 1. Set working directory and load packages
+
+```{r, eval=T}
+library(tidyverse)
+library(pastecs)
+install.packages("WRS2")
+library(WRS2)
+source("https://osf.io/download/9kq2d/")
+```
+
+## 2. Set up script options
+
+These settings allow us to reduce rounding and minimize the use of scientific notation in results.
+
+```{r, eval=F}
+options(scipen = 100, digits = 5)
+```
+
+## 3. Load data
+
+```{r, eval=T}
+load("cond.Rda")
+```
+
+## 4. Get variable names
+
+We need to get the variable names for our variables of interest, parental investment and math scores. Use the following syntax to get this information.
+
+```{r}
+attributes(cond)["variable.labels"]
+```
+
+## 5. Normality check
+
+Use `stat.desc()` to get normality tests, skewness and kurtosis values, etc.
+
+```{r}
+stat.desc(cond[c("c2mtscor","parinv")], norm=TRUE)
+```
+
+**Note that we are seeing rather modest, perhaps even trivial departures from normality with both math scores that are still significant (modest skewness of -.3, excellent Shapiro-Wilks test of .99) and parental investment (modest skewness and kurtosis statistics of -.26, -.51, excellent Shapiro-Wilks test of .96) that are still significant.  With large datasets like this one, significant but insubstantial departures from "normality" are less of an issue, since you probably have enough cases to produce normally distributed sampling distributions. The sample size also explains why kurt.2SE and skew.2SE are above |1|; because those numbers are z-scores, and with a large N the standard errors get very small, so even a skewness/kurtosis value that looks “small” in absolute terms can be many SEs away from 0, which blows up the ratio.**
+
+*Remember: We can’t assume normality if either the skewness or kurtosis absolute value is greater than 2 OR the skewness or kurtosis statistics are at least 2x their respective standard errors. We can look at the `skew.2SE` and `kurt.2SE` rows from `pastecs::stat.desc` to see if the absolute values are greater than 1. If they are, we are looking at significant departures from normality.*
+
+*We can also look at the Shapiro-Wilks test.  If `normtest.W` is below .90, that represents substantial deviations from normality.  If `normtest.p` values are significant, we reject the null hypothesis that this data is normally distributed.*
+
+
+## 6. Produce histograms for each variable involved in the correlation
+
+Produce histograms for each variable individually using ggplot. Make sure to include a descriptive title and axis labels.
+
+```{r, eval=F}
+ggplot(data = DATAFRAME, aes(x = VARIABLE, y = (..count..)*100/sum(..count..))) +
+geom_histogram(binwidth = BINWIDTHQUANTITY, fill = "COLORNAME") +
+labs(x = "VARIABLE NAME", y = "QUANTITY BEING GRAPHED (PERCENTAGES, PROPORTIONS, COUNTS)",
+title = "TITLE DESCRIPTION") +
+theme_minimal()
+```
+
+### Answer
+
+```{r, eval=T}
+ggplot(data = cond, aes(x = c2mtscor, y = (..count..)*100/sum(..count..))) +
+geom_histogram(binwidth = 5, fill = "grey") +
+labs(x = "Math Scores", y = "Percent",
+title = "Distribution of Math Scores") +
+theme_minimal()
+
+ggplot(data = cond, aes(x = parinv, y = (..count..)*100/sum(..count..))) +
+geom_histogram(binwidth = 1, fill = "red") +
+labs(x = "Parental Investment", y = "Percent",
+title = "Distribution of Parental Investment") +
+theme_minimal()
+```
+
+
+## 7. Produce a scatterplot with a loess line to show relationship between variables
+
+Using the following syntax, produce a scatterplot for both variables and include a loess line.
+
+```{r, eval=F}
+ggplot(data = DATAFRAME, aes(x = VARIABLE, y = VARIABLE)) +
+geom_point(color="COLOR") +
+geom_smooth(method = "loess", color = "COLOR") +
+labs(x = "VARIABLE NAME", y = "VARIABLE NAME",
+title = "DESCRIPTIVE TITLE") +
+theme_minimal()
+```
+
+### Answer
+
+```{r, eval=T}
+ggplot(data = cond, aes(x = parinv, y = c2mtscor)) +
+geom_point(color="red") +
+geom_smooth(method = "loess", color = "black") +
+labs(x = "Parental investment", y = "Math Scores",
+title = "Math Scores By Parental investment") +
+theme_minimal()
+```
+
+
+## 8. Interpret results to decide what type of correlation we should do
+
+Using the descriptive statistics and plots, decide if we should run a Pearson correlation or a
+Winsorized correlation.
+
+### Answer
+
+**Personally, I would say, we have nearly 5000 cases, we have significant departures from normality but the actual magnitude of those departures are modest, given the low-magnitude estimates for skewness and kurtosis and the very high Shapiro-Wilks test, we should go with the Pearson correlation.**
+
+**If our sample was substantially smaller (say less than 500 people) I might say go with the Winsorized correlation.**
+
+
+9. Regardless of correlation type, perform both Pearson and 20% Winsorized correlation Using the wincor() function from the loaded source functions, perform two correlations. The only difference between the correlation syntax should be the tr argument, which refers to the amount of trimming to perform (%) with the correlation. Hint: tr = 0 for a Pearson correlation. 
+
+```{r, eval=F}
+wincor(cond$VARIABLE, cond$VARIABLE, tr = VALUE)
+```
+
+### Answer
+
+```{r, eval=F}
+wincor(cond$c2mtscor, cond$parinv, tr = 0)
+wincor(cond$c2mtscor, cond$parinv, tr = .2)
+
+```
+
+
+## 10. Write up correlation results
+
+Even though we performed both correlations, write up the correlation for the correlation we
+decided that we should do in step 8. Write your results in 1 sentence as they might appear in a
+journal article.
+
+### Answer
+
+Parental involvement is positively associated with math scores, *r*=0.27, p<0.001.
+
+## 11. Pearson vs Winsorized correlations
+
+In what circumstances would a Winsorized correlation be stronger than the Pearson
+correlation?
+
+### Answer
+
+With 5000 cases and roughly normally distributed variables, it is unlikely a winsorized correlation would be much different than a Pearson correlation.  But with a much smaller sample, outliers that cut against the main association (in this case, cases with low levels of parental involvement and high math scores, or cases with high levels of parental involvement and low math scores) would produce a stronger Pearson correlation than a winsorized correlation. 
+
+
+12. Save R script
+

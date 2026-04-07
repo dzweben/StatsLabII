@@ -1,0 +1,320 @@
+---
+title: "Lab Session 24 ANSWER KEY"
+author: "Joshua Klugman"
+output: 
+  word_document:
+    highlight: kate
+    reference_docx: style_template_ak2.docx
+    fig_caption: no
+---
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# The Polynomial Specification
+
+Using data from the 1991 General Social Survey (GSS), we are going to use a polynomial regression function to examine the association between schooling (independent variable; IV) and personal income in $10,000s (dependent variable; DV).
+
+## Problems 1-7 are a repeat of the prior lab session.
+
+## 1. Load packages and set options
+
+```{r, eval=F}
+library(tidyverse)
+library(psych)
+library(stargazer)
+library(haven)
+library(effects)
+options(digits=6)
+```
+
+### Answer
+
+
+```{r, eval=T}
+library(tidyverse)
+library(psych)
+library(stargazer)
+library(haven)
+library(effects)
+options(digits=6)
+
+```
+
+## 2. Load data
+
+```{r, eval=F}
+df_raw <- haven::read_sav("GSS1991.sav")
+```
+
+
+### Answer
+
+```{r, eval=T}
+df_raw <- haven::read_sav("GSS1991.sav")
+```
+
+## 3. Select only variables of interest.
+
+Let’s make the data a bit friendlier to work with by selecting only a few variables of interest, `RINCOM91`, `CONRINC`, and `EDUC` (`RINCOM91` is the original ordinal coded version of personal income; `CONRINC` used midpoint coding to get a  continuous version.  We will use `RINCOM91` only for data management and not for any analyses).
+
+```{r, eval=F}
+df<-subset(df_raw, select=c(RINCOM91, CONRINC, EDUC))
+```
+
+### Answer
+
+```{r, eval=T}
+df<-subset(df_raw, select=c(RINCOM91, CONRINC, EDUC))
+```
+
+## 4. Get value labels and distributions for all variables.
+
+```{r, eval=F}
+attr(df$VARIABLE, "labels")
+table(df$VARIABLE, exclude = NULL)
+```
+
+### Answer
+
+```{r, eval=T}
+attr(df$EDUC, "labels")
+table(df$EDUC, exclude = NULL)
+
+attr(df$CONRINC, "labels")
+table(df$CONRINC, exclude = NULL)
+
+
+attr(df$RINCOM91, "labels")
+table(df$RINCOM91, exclude = NULL)
+
+```
+
+
+
+## 5. Coerce all variables to be numeric
+
+```{r, eval=F}
+df$RINCOM91<-as.numeric(df$RINCOM91)
+df$CONRINC<-as.numeric(df$CONRINC)
+df$EDUC<-as.numeric(df$EDUC)
+```
+
+### Answer
+
+```{r, eval=T}
+df$RINCOM91<-as.numeric(df$RINCOM91)
+df$CONRINC<-as.numeric(df$CONRINC)
+df$EDUC<-as.numeric(df$EDUC)
+```
+
+## 6. Make sure there are no numeric missing values 
+
+E.g. 0, 999998 or 999999 for "Inapplicable", "Don't know", "No answer" responses for CONRINC.  We want all missing values to be *system* missing values indicated as `<NA>`.
+
+
+### Answer
+
+All missing values should be system missing.
+
+
+## 7. Subset the data to just include cases with complete information on both variables
+
+```{r, eval=F}
+df_ss<-na.omit(df)
+```
+
+### Answer
+
+```{r, eval=T}
+df_ss<-na.omit(df)
+```
+
+## At this point, we are diverging from the prior lab.  
+
+## 8. Calculate income in $10,000s
+
+Store this as a new variable (`income10k`) in the subsetted data frame.  From here on out, this is the income variable you will use for this lab session.
+
+### Answer
+
+```{r}
+df_ss$income10k<-df_ss$CONRINC/10000
+```
+
+## 9. Fit a polynomial regression model
+
+There are two ways to do this, pick your favorite! Use summary() to get model output.
+
+```{r, eval=F}
+m1 <- lm(data = df_ss,
+         income10k ~ poly(EDUC, degree = 2, raw = TRUE))
+m2 <- lm(data = df_ss,
+         income10k ~ EDUC + I(EDUC^2))
+```
+
+### Answer
+
+```{r, eval=T}
+m1 <- lm(data = df_ss,
+         income10k ~ poly(EDUC, degree = 2, raw = TRUE))
+m2 <- lm(data = df_ss,
+         income10k ~ EDUC + I(EDUC^2))
+```
+
+Use psych::describe() to get more information about our variables.
+
+```{r, eval=F}
+psych::describe(df_ss,quant=c(.1,.9))
+```
+
+## 10. Create a `stargazer` table
+
+Remember to check automatically generated variables before adding your own covariate and dependent variable labels.  
+
+Note that `stargazer` will choke on arithmetic operators in labels like `^`, to avoid this issue you can preface the character with two forward slashes.
+
+```{r, eval=F}
+stargazer(m1, 
+          type = "text",
+          report = "vct*", # show t-statistics too
+          star.cutoffs = c(0.05, 0.01, 0.001), digits=5,digits.extra=0,)
+```
+
+### Answer
+
+```{r, eval=T}
+stargazer(m1, 
+          type = "text",
+          report = "vct*", # show t-statistics too
+          star.cutoffs = c(0.05, 0.01, 0.001), digits=5,digits.extra=0,
+          covariate.labels=c("Years of schooling","Years of schooling\\^2"),
+          dep.var.labels="Income ($10,000s)")
+```
+
+**Note that of the three models we ran in the last and this lab, this one is producing the best R^2^.  In the "level-level" model (income~schooling), we had an R^2^ of around .13, in the "level-log" model (income~ln(schooling)) our R^2^ decreased to around .11**.  
+
+## 11. Write the regression equation for this polynomial regression.
+
+### Answer
+
+$$\hat{income10k}=3.47388 + -0.431(educ) +  0.02752(educ^2)$$
+
+## 12. Interpret the intercept and slopes
+
+*Remember that acceleration parameters do not have an intuitive interpretation, just say what the sign tells us.*
+
+### Answer
+
+Intercept: Predicted income when someone has zero years of schooling is $34,740.
+
+Slope: When education is zero, a yearly increase in schooling is associated with a decrease in income of $4310.  (not significant)
+
+Acceleration parameter: Because it is positive, this tells us that the association between schooling and income gets more positive as schooling increases.  We could use calculus and multiply the slope by 2 to tell us that a yearly increase in education means the slope for education will become more positive by .056 $10,000 (or $560).
+
+## 13. Show the calculations for the predicted income for someone with 20 years of education
+
+### Answer
+
+$$\hat{income10k}=3.47388 + -0.431(20) +  0.02752(20^2) = 5.8619$$ or $58,619$$.
+
+## 14. Use effects package to produce predictions
+
+Produce all potential levels of predicted income from 4 to 20 years of education in 1 year increments. Make sure your term matches the model term you used. Save these predictions as a data frame all in one line of code.
+
+```{r, eval=F}
+eff_df <- as.data.frame(effect("EDUC",
+                               MODELNAME,
+                               xlevels = list(EDUC = seq(?,?,?))))
+eff_df
+```
+
+### Answer
+
+```{r, eval=T}
+eff_df <- as.data.frame(effect("EDUC",
+                               m1,
+                               xlevels = list(EDUC = seq(4,20,1))))
+eff_df
+```
+
+**Note the prediction for 20 years--it should be pretty close to the one we calculated.  I calculated a prediction of 5.8619 and `effect` is giving me a prediction of 5.86104.**
+
+## 15 Create a plot
+
+Use the data frame of predicted effects to create a plot. Be sure to include a meaningful title and axis labels.
+
+```{r, eval=F}
+ggplot(data = eff_df, aes(x = EDUC, y = fit*10000)) +
+  geom_ribbon(alpha = 0.2, fill = "COLOR", color = "COLOR",
+              aes(ymin = lower*10000, ymax = upper*10000)) +
+  geom_point() +
+  labs(x = "AXIS TITLE", y = "AXIS TITLE",
+       title = "PLOT TITLE") +
+  theme_minimal()
+```
+
+### Answer
+
+```{r}
+ggplot(data = eff_df, aes(x = EDUC, y = fit*10000)) +
+  geom_ribbon(alpha = 0.2, fill = "yellow", color = "yellow",
+              aes(ymin = lower*10000, ymax = upper*10000)) +
+  geom_point() +
+  labs(x = "Years of Schooling", y = "Predicted Income",
+       title = "Personal Income By Education") +
+  theme_minimal()
+```
+
+
+
+## 16. Calculate the amount of schooling when the instantaneous effect is equal to 0
+
+This refers to when the relationship between income and education is exactly equal to zero. See lecture notes 14, pages 34-35 for more information. 
+
+### Answer
+
+$$\hat{income10k}=3.47388 + -0.431(educ) +  0.02752(educ^2)$$
+
+
+$$\frac{dy}{dx}=-.431 + .02752(2)(educ)$$
+
+Deflection point: $$\frac{-\hat{b_1}}{2 \times \hat{b_2}}=\frac{0.431}{.05504}=7.83067$$
+
+The association between schooling and income is negative when schooling is between 0 and 7.83 years, with the deflection point being 7.83 years.  For schooling beyond 7.83 years, the association is positive.  
+
+## 17 In the subsetted data frame, create a logical variable to show deflection point cutoff
+
+Create a logical (`TRUE`/`FALSE`) variable that is equal to TRUE if the year of education for a given person is below the deflection point (step 18). This is the exact point where the relationship between income and years of education reverses (i.e., goes from negative to positive, or vice versa).
+
+```{r, eval=F}
+df$deflection <- df$EDUC < ?
+```
+
+### Answer
+
+```{r}
+df$deflection<-df$EDUC < 7.83067
+```
+
+## 18 Create a proportion table
+
+Show the proportion of people whose years of schooling is at or below the deflection point and write up this number in a sentence.
+
+```{r, eval=F}
+prop.table(table(df$deflection))
+```
+
+### Answer
+
+```{r, eval=T}
+prop.table(table(df$deflection))
+```
+**(the low, low proportion (.036) of people with such a low level of education suggests that we really should not make much of the negative association or the dramatic U-turn in the association)**
+
+## 19. Save R script
+
+

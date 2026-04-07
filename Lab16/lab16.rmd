@@ -1,0 +1,231 @@
+---
+title: "Lab 16"
+output: 
+  word_document:
+    highlight: kate
+    reference_docx: style_template2.docx
+    fig_caption: yes
+---
+
+In this assignment, you will use the `ecls.rda` dataset and examine a potential nonlinear association between income and test scores using a polynomial specification.  
+
+As you progress through the assignment, you may need to customize `options(scipen=VALUE)` to encourage R to use or not use scientific notation (the higher the value, the less likely R is to use scientific notation) and `options(digits=VALUE)` to encourage R to round to a certain number of digits.
+
+* Integrate your answers in this Word document .  
+* For any problem asking you to carry out an operation in R, copy and paste your syntax and any R output below the respective question.
+* For questions that ask you to do manual calculations, you should show your work. Using R for manual calculations is allowed and encouraged (show your R syntax and output).
+* For each lab assignment, you should maintain an organized organized syntax file ("script")
+  + With comments prefaced by `#` that explain what you are doing
+  + missteps/mistakes are deleted
+  + in case you lose your work, you can run your script and reproduce your analyses.
+  + Some labs may require you to build on analyses/data cleaning you did in a prior lab and saving scripts easily allow you to do that
+* You need to upload this document to Canvas by the deadline *and check Canvas to make sure your upload took*
+
+# Problem 1 (0 pts)
+
+Load into memory these packages: `dplyr`, `effects`, `ggplot2`, `haven`, and `stargazer`. If these packages are not already installed on your version of R then you should install them as well.
+
+# Problem 2 (0 pts)
+
+Download the ecls.rda datafile from Canvas and load it into R.
+
+# Problem 3 (1 pts)
+
+Use base R's `summary` function to get descriptives of the kindergarten reading score variable ("c2rtscor") and the family income variable ("wkincome").
+
+Syntax:
+
+```{r, eval=F}
+summary(DATAFRAME$VARIABLE)
+```
+
+# Problem 4 (1 pt)
+
+Create a *z*-standardized version of reading test scores.  **For the rest of the assignment, when I ask you to use the test scores variable, use this one, not the original variable containing the raw metric.**
+
+Syntax:
+
+```{r, eval=F}
+DATAFRAME$NEWVARIABLE<-as.numeric(scale(DATAFRAME$ORIGINALVARIABLE))
+```
+
+# Problem 5 (1 pt)
+
+Create a *z*-standardized version of income scores.  
+
+# Problem 6 (1 pt)
+
+Create a rescaled version of income such that the unit of measurement is $10,000 (as opposed to single dollars).  **For the rest of the assignment, unless I specify otherwise, use this income variable, not the original income using dollars as the unit of measurement.**
+
+# Problem 7 (1 pt)
+
+Get the number of cases in the ECLS data.
+
+# Problem 8 (2 pts)
+
+Subset the data so that you only have cases with valid values on both the reading score and income variables.  From now on just use this new subsetted data frame.
+
+Syntax:
+
+```{r,eval=F}
+NEWDATAFRAME<-subset(ORIGINALDATAFRAME,!is.na(VARIABLE1) & !is.na(VARIABLE2))
+```
+
+# Problem 9 (1 pt)
+
+Get the number of cases in the subsetted data.  How many cases did you drop?
+
+# Problem 10 (2 pts)
+
+Produce a scatterplot showing the relationship between income and reading scores.
+
+In addition to the scatterplot (`geom_point`), you should also graph three predictions for reading scores based on income using three methods:
+
+* A linear regression without any transformation, in red
+* A linear regression where .0001 is added to income, and this sum is log transformed, in green
+* A linear regression where you use a quadratic polynomial function of income (*income*^1^, *income*^2^), in magenta 
+* Ideally, we would include predictions based on locally-estimated scatterplot smoothing ("loess").  Unfortunately, there is too many cases and I suspect R will not process a loess line for most of you.  Instead, let us apporximate a loess line by using a linear regression with a sextic polynomial function of income (*income*^1^, *income*^2^, *income*^3^, *income*^4^, *income*^5^, and *income*^6^), in blue
+
+
+Syntax:
+
+```{r, eval=F}
+ggplot(data=DATAFRAME,aes(x=INDEPENDENTVARIABLE,y=DEPENDENTVARIABLE))+
+  geom_point()+
+  geom_smooth(method="lm",formula="y~x",color="red")+
+  geom_smooth(method="lm",formula="y~log(x+.0001)",color="green")+
+  geom_smooth(method="lm",formula="y~poly(x,2)",color="magenta1")+
+    geom_smooth(method="lm",formula="y~poly(x,6)",color="blue")+
+  labs(title="TITLE TEXT", x="X AXIS LABEL TEXT", y="Y AXIS LABEL TEXT")
+
+```
+
+# Problem 11 (0 pt)
+
+In the last lab assignment you explored a log transformation of income.  The graph you just did suggests that the quadratic polynomial function is worse-fitting than the level-log model.  For the sake of illustration, you will focus on the quadratic model for the rest of the assignemnt.
+
+# Problem 12 (3 pts)
+
+Run three separate regressions--reading scores (dependent variable) on raw income (independent variable); reading scores (dependent variable) on income and income^2^; and reading scores (dependent variable) on income *Z*-standardized (just a linear model, do not add a quadratic term!). Save the models as separate objects.  
+
+To get a nice table in Stargazer, I am afraid you will have to eschew the `poly` function and instead use the `I`nhibit function.
+
+# Problem 13 (5 pts)
+
+Use `stargazer` to present the results of the model showing the regressions for the association between  model involving raw income.  
+
+Use stargazer to present the results for both models in one table. Your table should have clear labels for the dependent variable and the predictors. The units of measurement of both the predictors and outcome should be clear. You should NOT use the default presentation of a single star representing marginal (p<.10) significance.
+
+Here is some `stargazer` syntax you may find helpful. I recommend running stargazer using just the type="text" option and then adding the options one at a time to see how they affect your table. You should be especially careful with covariate.labels as you do NOT want to mislabel your predictors. If you have questions about the stargazer syntax the documentation is helpful.
+
+Also, I find that `stargazer` does NOT like the "^" character commonly used to represent powers, so I recommend just typing out "squared" for the quadratic term.
+
+Syntax:
+
+```{r, eval=F}
+stargazer(MODELOBJECT,MODELOBJECT,
+          type="text",
+          report="vct*",
+          title="TEXT",
+          dep.var.caption="TEXT",
+          dep.var.labels=c("TEXT1","TEXT2"),
+          covariate.labels=c("TEXT1","TEXT2",...,"TEXTLAST"),
+          star.cutoffs=c(VALUE1,VALUE2,VALUE3),
+          star.char=c("SYMBOL1","SYMBOL2","SYMBOL3"),
+          notes="TEXT",
+          notes.append=FALSE
+          )
+```
+
+# Problem 14 (2 pts)
+
+Print the results of the linear model using *z*-standardized income.
+
+Syntax:
+
+```{r,eval=F}
+summary(MODELOBJECT)
+```
+
+# Problem 15 ( 2 pts)
+Interpret the slope for income from the quadratic model as you would for a statistics class (not an APA article)
+
+# Problem 16 (1 pt)
+
+Ask R to generate a sequence of numbers ranging from 0 to 100 in .5 increments.  These will represent values of the income variable for which you want predictions.  Remember income is in \$10,000s, so 0 to 100 on this variable is actually \$0 to \$1,000,000!  Save this sequence as a data object.
+
+Syntax:
+
+```{r, eval=F}
+OBJECTSTORINGVALUES<-seq(MINVALUE,MAXVALUE,INCREMENTVALUE)
+```
+
+# Problem 17 (3 pts)
+
+Use the `effect` function in the `effects` package to produce predicted reading scores based on the model using  **the quadratic specification**.
+
+Syntax:
+
+```{r, eval=F}
+EFFOBJECT<-effect("PREDICTORVAR",MODELOBJECT,xlevels=list(PREDICTORVAR=OBJECTSTORINGVALUES))
+```
+
+# Problem 18 (2 pts)
+
+Coerce the "eff object" into a data frame.  This should be a NEW data frame--give it a different name than any other data frame you have used for this assignment.  We will use this dataframe to graph the predicted incomes.
+
+Print this new data frame.
+
+Syntax:
+
+```{r, eval=F}
+NEWDATAFRAME<-as.data.frame(EFFOBJECT)
+NEWDATAFRAME
+```
+
+# Problem 19 (5 pts)
+
+Look at the prediction when the income variable equals .5 (remember the "fit" variable is the prediction!)  Show the calculations the model used to get this prediction.
+
+# Problem 20 (2 pts)
+
+In this new data frame which we will use to make our graph, we need a variable that captures the original income metric (single dollars).  Create this variable **in the new data frame**.
+
+# Problem 21 (5 pts)
+
+Graph the relationship between income and reading scores. Your graph should have a clear title and axis labels--there should be no ambiguity about the variable's unit of measurement.  You may have to do some Googling to figure out how to resize titles or axis labels, or how to introduce a line break.  
+
+Syntax:
+
+```{r, eval=F}
+ggplot(data=NEWDATAFRAME,aes(x=XAXISVARIABLE,y=YAXISVARIABLE))+
+  geom_point(size=VALUE)+
+  geom_ribbon(alpha=VALUE,fill="COLORNAME",color="COLORNAME",aes(ymin=LOWERBOUNDVARIABLE,ymax=UPPERBOUNDVARIABLE))+
+  labs(title="TITLE TEXT",x="X AXIS LABEL TEXT", y="Y AXIS LABEL TEXT")
+  
+```
+
+To specify the `size` of the `geom_point`s, I recommend a value between .5 and 1.0.  To specify the `alpha` (transparency) of the `geom_ribbon`, you should go for a value between 0 and 1, and probably closer to 0 than 1. The `fill` and `color` options specify the color of the ribbon and the ribbon's border, respectively (I recommend you use the same color here).  Googling r and color will give you a list of color names R understands. 
+
+# Problem 22 (2 pts)
+
+Use calculus to calculate the exact point when the relationship between income and reading scores is exactly zero.
+
+# Problem 23 (2 pts)
+
+In the subsetted data, create a logical variable that is TRUE if the child's family's income is below this deflection point.
+
+Syntax:
+
+```{r,eval=F}
+DATAFRAME$NEWVAR<-DATAFRAME$ORIGINALVAR<VALUE
+```
+
+# Problem 24 (4 pts)
+
+Use the `table` function to find out **proportion** of children whose families have an income at or above the deflection point.  Write up this number in a sentence
+
+
+# Problem 25 (5 pts)
+
+Write-up the association between  income and reading scores, APA style.  In one sentence, write-up the direction and significance of the income slope from the first model, without a quadratic parameter.  In another sentence, write up the significance of the quadratic parameter (do not worry about the coefficient for income^1^).  In yet another sentence, describe the relationship depicted in the graph you just created.  Your answer should be three sentences **maximum**.
