@@ -52,7 +52,21 @@ Income is the only continuous variable with a "raw" metric ($10,000s); all other
 
 Download these packages and load them into memory: `haven`, `stargazer`
 
-```{r}
+Syntax:
+
+```{r p1_syntax, eval=FALSE}
+options(scipen = 100)
+options(digits = 6)
+
+library(haven)
+library(stargazer)
+
+search()[1:8]
+```
+
+Output:
+
+```{r p1_output, echo=FALSE}
 options(scipen = 100)
 options(digits = 6)
 
@@ -66,7 +80,16 @@ search()[1:8]
 
 Load the dataframe `ecls.subset.rda` into R. The dataframe is called `ess`. This was originally created from an imported SPSS file using `haven`. Although you will not use any `haven` functions, I sometimes find that having it loaded into memory will avoid problems using these kinds of dataframes.
 
-```{r}
+Syntax:
+
+```{r p2_syntax, eval=FALSE}
+load("../ecls.subset.rda")
+ls()
+```
+
+Output:
+
+```{r p2_output, echo=FALSE}
 load("../ecls.subset.rda")
 ls()
 ```
@@ -75,7 +98,25 @@ ls()
 
 Estimate the five models. Traditionally, in the social sciences income is logged transformed but for the sake of simplicity we will forgo transformations.
 
-```{r}
+Syntax:
+
+```{r p3_syntax, eval=FALSE}
+m_base <- lm(readingz ~ inc10k + racef + pared + married + momwork, data = ess)
+m_mat <- lm(readingz ~ inc10k + racef + pared + married + momwork + foodsecz + meddummy, data = ess)
+m_inv <- lm(readingz ~ inc10k + racef + pared + married + momwork + cogmatz + parinvz, data = ess)
+m_par <- lm(readingz ~ inc10k + racef + pared + married + momwork + warmthz + cogstimz, data = ess)
+m_all <- lm(readingz ~ inc10k + racef + pared + married + momwork + foodsecz + meddummy + cogmatz + parinvz + warmthz + cogstimz, data = ess)
+
+summary(m_base)
+summary(m_mat)
+summary(m_inv)
+summary(m_par)
+summary(m_all)
+```
+
+Output:
+
+```{r p3_output, echo=FALSE}
 m_base <- lm(readingz ~ inc10k + racef + pared + married + momwork, data = ess)
 m_mat <- lm(readingz ~ inc10k + racef + pared + married + momwork + foodsecz + meddummy, data = ess)
 m_inv <- lm(readingz ~ inc10k + racef + pared + married + momwork + cogmatz + parinvz, data = ess)
@@ -97,7 +138,46 @@ Here is some suggested syntax for `stargazer`.
 
 Make sure the table appears in your lab using a monospace font (like Consolas) and that there is no wrapping. You may have to take a screenshot, resize the image, and paste it into your assignment. If you do use a screen capture please make sure it is cropped so that only the table appears, and that it is big enough to see without squinting.
 
-```{r}
+Syntax:
+
+```{r p4_syntax, eval=FALSE}
+stargazer(
+  m_base, m_mat, m_inv, m_par, m_all,
+  type = "text",
+  report = "vct*",
+  title = "Association Between Family Income and Reading Scores, ECLS 1998-1999 Cohort",
+  dep.var.caption = "Outcome",
+  dep.var.labels = "Spring Kindergarten Reading Score (z)",
+  covariate.labels = c(
+    "Family Income ($10,000s)",
+    "Race: Asian (ref = Hispanic)",
+    "Race: Black (ref = Hispanic)",
+    "Race: White (ref = Hispanic)",
+    "Race: Other (ref = Hispanic)",
+    "Parent Education: Some College (ref = HS or less)",
+    "Parent Education: BA (ref = HS or less)",
+    "Parent Education: Post-BA (ref = HS or less)",
+    "Parents Married (ref = Not Married)",
+    "Working Mother (ref = Non-Working)",
+    "Food Security (z)",
+    "Medical Care Indicator (1 = full coverage/use)",
+    "Cognitive Materials (z)",
+    "Parental Involvement (z)",
+    "Parental Warmth (z)",
+    "Cognitive Stimulation (z)"
+  ),
+  star.cutoffs = c(0.05, 0.01, 0.001),
+  star.char = c("*", "**", "***"),
+  notes = c("Standard errors in parentheses", "*p<.05; **p<.01; ***p<.001"),
+  notes.append = FALSE,
+  digits = 3,
+  digits.extra = 0
+)
+```
+
+Output:
+
+```{r p4_output, echo=FALSE}
 stargazer(
   m_base, m_mat, m_inv, m_par, m_all,
   type = "text",
@@ -139,9 +219,21 @@ Use the `anova` function to answer these questions (no write-up is necessary):
 * Do the mediators add explanatory power over the baseline model?
 * Does adding all mediators at once add explanatory power over the models where they are entered one at a time?
 
-Syntax
+Syntax:
 
-```{r}
+```{r p5_syntax, eval=FALSE}
+anova(m_base, m_mat)
+anova(m_base, m_inv)
+anova(m_base, m_par)
+
+anova(m_mat, m_all)
+anova(m_inv, m_all)
+anova(m_par, m_all)
+```
+
+Output:
+
+```{r p5_output, echo=FALSE}
 anova(m_base, m_mat)
 anova(m_base, m_inv)
 anova(m_base, m_par)
@@ -155,7 +247,27 @@ anova(m_par, m_all)
 
 Calculate the percentage difference between the original effect of income in the baseline model (reference) versus all subsequent models (comparison). You need to do this calculation FOUR times. HINT: Your denominator should be the baseline effect of income for all calculations, and all of your answers should be either zero or negative.
 
-```{r}
+Syntax:
+
+```{r p6_syntax, eval=FALSE}
+b_base <- coef(m_base)["inc10k"]
+
+pct_mat <- ((coef(m_mat)["inc10k"] - b_base) / b_base) * 100
+pct_inv <- ((coef(m_inv)["inc10k"] - b_base) / b_base) * 100
+pct_par <- ((coef(m_par)["inc10k"] - b_base) / b_base) * 100
+pct_all <- ((coef(m_all)["inc10k"] - b_base) / b_base) * 100
+
+round(c(
+  material_hardship = pct_mat,
+  parental_investment = pct_inv,
+  positive_parenting = pct_par,
+  all_mediator_blocks = pct_all
+), 3)
+```
+
+Output:
+
+```{r p6_output, echo=FALSE}
 b_base <- coef(m_base)["inc10k"]
 
 pct_mat <- ((coef(m_mat)["inc10k"] - b_base) / b_base) * 100
@@ -175,6 +287,8 @@ round(c(
 
 Interpret the percentage difference between the baseline income association and the effect income association with all mediator blocks added. One sentence MAXIMUM.
 
+Output:
+
 Adding all mediator blocks reduced the income slope by `r abs(round(pct_all, 2))`%, indicating that the income-reading association is partially explained by these mediators but not eliminated.
 
 ## Problem 8 (10 pts)
@@ -182,6 +296,8 @@ Adding all mediator blocks reduced the income slope by `r abs(round(pct_all, 2))
 Sum up the findings. Did income have a significant association with reading scores in the baseline model? Did it ever become non-significant after adding any of the mediator blocks? Did the association weaken after controlling for the mediator blocks? Which mediator block weakened the income association the most? The least? Which mediator blocks increase our R^2^ the most? The least? What happens to the income association when you control for all mediator blocks--are we explaining the entirety of the income association, or is there still a remaining association (a "direct effect")?
 
 Write a polished paragraph that addresses these questions. Do **not** address them in a bulletpoint fashion.
+
+Output:
 
 In the baseline model, family income was positively associated with reading scores after controlling for race, parental education, parental marital status, and maternal work status, `B = 0.015`, `t(14830) = 10.14`, `p < .001`, `R^2 = .152`. Income remained statistically significant in every mediator model (material hardship: `B = 0.014`, `t(14828) = 9.31`, `p < .001`; parental investment: `B = 0.012`, `t(14828) = 7.91`, `p < .001`; positive parenting: `B = 0.015`, `t(14828) = 10.03`, `p < .001`; all mediators: `B = 0.011`, `t(14824) = 7.40`, `p < .001`), so the income association never became non-significant. Relative to baseline, attenuation of the income slope was largest when parental investment was added (`-21.84%`) and smallest when positive parenting was added (`-0.99%`), and the same pattern appeared for model fit (largest `R^2` gain with parental investment, `\Delta R^2 = .015`; smallest `R^2` gain with positive parenting, `\Delta R^2 < .001`). When all mediator blocks were entered together, the income slope was reduced by `26.64%` but remained statistically significant, indicating partial mediation rather than full mediation (a remaining direct association).
 
