@@ -1,0 +1,190 @@
+---
+title: "Lab 17"
+author: "Danny Zweben"
+output:
+  word_document:
+    reference_docx: ../style_template2.docx
+    fig_caption: yes
+---
+
+For this assignment, you will do a multiple regression analysis and test a mediation model using the Early Childhood Longitudinal Study (ECLS) on a cohort of kindergarteners in the 1998-1999 school year. Your outcome will be the students’ reading scores. The dataset, `ecls.subset.rda`, is available on Canvas.
+
+* Integrate your answers in this Word document.
+* For any problem asking you to carry out an operation in R, copy and paste your syntax and any R output below the respective question.
+* For questions that ask you to do manual calculations, you should show your work. Using R for manual calculations is allowed and encouraged (show your R syntax and output).
+* For each lab assignment, you should maintain an organized organized syntax file ("script")
+  + With comments prefaced by `#` that explain what you are doing
+  + missteps/mistakes are deleted
+  + in case you lose your work, you can run your script and reproduce your analyses.
+  + Some labs may require you to build on analyses/data cleaning you did in a prior lab and saving scripts easily allow you to do that
+* You need to upload this document to Canvas by the deadline *and check Canvas to make sure your upload took*
+
+# The Analysis
+
+You are interested in the association between income (`wkincome`, in $10,000s) and children's reading scores (`readingz`). To the extent that the association is causal (?), you want to see if it spurious (caused by some other variables) and if it mediated by other variables. You think the following variables are confounds: they affect both family income and children's reading scores:
+
+* Race (`racef`)
+* Parental Education (`pared`)
+* Parental marital status (`married`)
+* Maternal work status (`momwork`)
+
+You think the following "blocks" are mediators--they explain the "effect" of income on reading scores.
+
+* *Material hardship*. The two variables are a scale of the family’s food security (`foodsecz`) and medical care (`meddummy`), which is a dummy indicator where 1 means the child is covered by health insurance and has seen a doctor and a dentist in the past year. Zero means the child is missing at least one of these three things.
+* *Parental investment*. The two variables are a scales for the availability of cognitively stimulating materials (`cogmatz`) and parental involvement in schools (`parinvz`).
+* *Positive parenting behavior.* Scales for parental warmth (`warmthz`) and for engaging in cognitively-stimulating activities with the children (`cogstimz`).
+
+With the prior variables, estimate a baseline model to see if family income is associated with cognitive growth ceteris paribus (controlling for the confounds). Then estimate models that are nested in the baseline model to see if the mediators explain the association between family income and reading scores.
+
+You are not concerned with the causal relations among these three blocks of mediators—all you care about is (1) whether or not they can explain the effects of income on cognitive skills; (2) which blocks do the best job of explaining the effects of income; (3) what happens when all blocks are controlled for.
+
+Consequently, you should run 5 models:
+
+* Baseline Model
+* Baseline + Material hardship  (no other mediating block)
+* Baseline + Parental investment (no other mediating block)
+* Baseline + Positive parenting behavior (no other mediating block)
+* Baseline + All three mediating blocks
+
+Income is the only continuous variable with a "raw" metric ($10,000s); all other continuous variables are *z*-standardized.
+
+## Problem 1 (0 pt)
+
+Download these packages and load them into memory: `haven`, `stargazer`
+
+```{r}
+options(scipen = 100)
+options(digits = 6)
+
+library(haven)
+library(stargazer)
+
+search()[1:8]
+```
+
+## Problem 2 (0 pts)
+
+Load the dataframe `ecls.subset.rda` into R. The dataframe is called `ess`. This was originally created from an imported SPSS file using `haven`. Although you will not use any `haven` functions, I sometimes find that having it loaded into memory will avoid problems using these kinds of dataframes.
+
+```{r}
+load("../ecls.subset.rda")
+ls()
+```
+
+## Problem 3 (5 pts)
+
+Estimate the five models. Traditionally, in the social sciences income is logged transformed but for the sake of simplicity we will forgo transformations.
+
+```{r}
+m_base <- lm(readingz ~ inc10k + racef + pared + married + momwork, data = ess)
+m_mat <- lm(readingz ~ inc10k + racef + pared + married + momwork + foodsecz + meddummy, data = ess)
+m_inv <- lm(readingz ~ inc10k + racef + pared + married + momwork + cogmatz + parinvz, data = ess)
+m_par <- lm(readingz ~ inc10k + racef + pared + married + momwork + warmthz + cogstimz, data = ess)
+m_all <- lm(readingz ~ inc10k + racef + pared + married + momwork + foodsecz + meddummy + cogmatz + parinvz + warmthz + cogstimz, data = ess)
+
+summary(m_base)
+summary(m_mat)
+summary(m_inv)
+summary(m_par)
+summary(m_all)
+```
+
+## Problem 4 (10 pts)
+
+Use `stargazer` to make a professional-looking table of your regression results. The table should have a title making clear the who, what, when, and where; variables' units of measurement should be clear. Do not use any options to suppress the reporting of R^2^ and adjusted R^2^. Make sure Stargazer does not use a single asterisk to represent significance at the .10 level--either do not report "marginally significant" (*p*<0.10) findings or represent them with a different symbol, like "+".
+
+Here is some suggested syntax for `stargazer`.
+
+Make sure the table appears in your lab using a monospace font (like Consolas) and that there is no wrapping. You may have to take a screenshot, resize the image, and paste it into your assignment. If you do use a screen capture please make sure it is cropped so that only the table appears, and that it is big enough to see without squinting.
+
+```{r}
+stargazer(
+  m_base, m_mat, m_inv, m_par, m_all,
+  type = "text",
+  report = "vct*",
+  title = "Association Between Family Income and Reading Scores, ECLS 1998-1999 Cohort",
+  dep.var.caption = "Outcome",
+  dep.var.labels = "Spring Kindergarten Reading Score (z)",
+  covariate.labels = c(
+    "Family Income ($10,000s)",
+    "Race: Asian (ref = Hispanic)",
+    "Race: Black (ref = Hispanic)",
+    "Race: White (ref = Hispanic)",
+    "Race: Other (ref = Hispanic)",
+    "Parent Education: Some College (ref = HS or less)",
+    "Parent Education: BA (ref = HS or less)",
+    "Parent Education: Post-BA (ref = HS or less)",
+    "Parents Married (ref = Not Married)",
+    "Working Mother (ref = Non-Working)",
+    "Food Security (z)",
+    "Medical Care Indicator (1 = full coverage/use)",
+    "Cognitive Materials (z)",
+    "Parental Involvement (z)",
+    "Parental Warmth (z)",
+    "Cognitive Stimulation (z)"
+  ),
+  star.cutoffs = c(0.05, 0.01, 0.001),
+  star.char = c("*", "**", "***"),
+  notes = c("Standard errors in parentheses", "*p<.05; **p<.01; ***p<.001"),
+  notes.append = FALSE,
+  digits = 3,
+  digits.extra = 0
+)
+```
+
+## Problem 5 (6 pts)
+
+Use the `anova` function to answer these questions (no write-up is necessary):
+
+* Do the mediators add explanatory power over the baseline model?
+* Does adding all mediators at once add explanatory power over the models where they are entered one at a time?
+
+Syntax
+
+```{r}
+anova(m_base, m_mat)
+anova(m_base, m_inv)
+anova(m_base, m_par)
+
+anova(m_mat, m_all)
+anova(m_inv, m_all)
+anova(m_par, m_all)
+```
+
+## Problem 6 (6 pts)
+
+Calculate the percentage difference between the original effect of income in the baseline model (reference) versus all subsequent models (comparison). You need to do this calculation FOUR times. HINT: Your denominator should be the baseline effect of income for all calculations, and all of your answers should be either zero or negative.
+
+```{r}
+b_base <- coef(m_base)["inc10k"]
+
+pct_mat <- ((coef(m_mat)["inc10k"] - b_base) / b_base) * 100
+pct_inv <- ((coef(m_inv)["inc10k"] - b_base) / b_base) * 100
+pct_par <- ((coef(m_par)["inc10k"] - b_base) / b_base) * 100
+pct_all <- ((coef(m_all)["inc10k"] - b_base) / b_base) * 100
+
+round(c(
+  material_hardship = pct_mat,
+  parental_investment = pct_inv,
+  positive_parenting = pct_par,
+  all_mediator_blocks = pct_all
+), 3)
+```
+
+## Problem 7 (2 pts)
+
+Interpret the percentage difference between the baseline income association and the effect income association with all mediator blocks added. One sentence MAXIMUM.
+
+Adding all mediator blocks reduced the income slope by `r abs(round(pct_all, 2))`%, indicating that the income-reading association is partially explained by these mediators but not eliminated.
+
+## Problem 8 (10 pts)
+
+Sum up the findings. Did income have a significant association with reading scores in the baseline model? Did it ever become non-significant after adding any of the mediator blocks? Did the association weaken after controlling for the mediator blocks? Which mediator block weakened the income association the most? The least? Which mediator blocks increase our R^2^ the most? The least? What happens to the income association when you control for all mediator blocks--are we explaining the entirety of the income association, or is there still a remaining association (a "direct effect")?
+
+Write a polished paragraph that addresses these questions. Do **not** address them in a bulletpoint fashion.
+
+In the baseline model, family income was positively associated with reading scores after controlling for race, parental education, parental marital status, and maternal work status, `B = 0.015`, `t(14830) = 10.14`, `p < .001`, `R^2 = .152`. Income remained statistically significant in every mediator model (material hardship: `B = 0.014`, `t(14828) = 9.31`, `p < .001`; parental investment: `B = 0.012`, `t(14828) = 7.91`, `p < .001`; positive parenting: `B = 0.015`, `t(14828) = 10.03`, `p < .001`; all mediators: `B = 0.011`, `t(14824) = 7.40`, `p < .001`), so the income association never became non-significant. Relative to baseline, attenuation of the income slope was largest when parental investment was added (`-21.84%`) and smallest when positive parenting was added (`-0.99%`), and the same pattern appeared for model fit (largest `R^2` gain with parental investment, `\Delta R^2 = .015`; smallest `R^2` gain with positive parenting, `\Delta R^2 = .001`). When all mediator blocks were entered together, the income slope was reduced by `26.64%` but remained statistically significant, indicating partial mediation rather than full mediation (a remaining direct association).
+
+## Problem 9 (0 points)
+
+Upload your this document to Canvas. Double-check your submission to make sure it took.
